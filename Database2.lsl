@@ -152,7 +152,6 @@ setUpMenu(key avatarKey, string message, list buttons)
     sayDebug("setUpMenu");
     
     buttons = buttons + ["Main"];
-    buttons = buttons + ["Main"];
     buttons = buttons + ["Close"];
     
     sendJSON("DisplayTemp", "menu access", avatarKey);
@@ -239,7 +238,7 @@ default
         databaseQuery = llDeleteSubList(databaseQuery, listRequestIndex, listRequestIndex);
         isEditCrimesList = llDeleteSubList(isEditCrimesList, listRequestIndex, listRequestIndex);
 
-        displayCentered("DB Status "+(string)status);
+        //displayCentered("DB Status "+(string)status);
         string assetNumber = "P-00000";
         string theCrime = "Unregistered";
         string theName = llGetOwner();

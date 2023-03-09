@@ -294,7 +294,7 @@ confirmHardcore(key avatarKey) {
     sayDebug("confirmHardcore");
     if (avatarKey == llGetOwner()) {
         string message = "Set your Lock Level to Hardcore?\n"+
-        "• Hardcore has the Heavy restrictions\n"+
+        "• Hardcore has the Heavy restrictions\n"+
         "• Hardcore has no safeword.\n"+
         "• To be released from Hardcore, you must ask a Guard.\n\n"+
         "Confirm that you want the Hardcore lock.";
