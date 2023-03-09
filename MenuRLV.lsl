@@ -2,9 +2,9 @@
 // Menu script for Black Gazza Collar 4
 // Timberwoof Lupindo
 // June 2019
-string version = "2023-03-08";
+string version = "2022-09-06";
 
-integer OPTION_DEBUG = FALSE;
+integer OPTION_DEBUG = 0;
 
 integer menuChannel = 0;
 integer menuListen = 0;
@@ -15,9 +15,9 @@ string RLV = "RLV";
 string lockLevel;
 list lockLevels = ["Off", "Light", "Medium", "Heavy", "Hardcore"];
 string lockLevelOff = "Off";
-integer rlvPresent = FALSE;
-integer renamerActive = FALSE;
-integer relayCheckboxState = FALSE;
+integer rlvPresent = 0;
+integer renamerActive = 0;
+integer relayCheckboxState = 0;
 string RelayOFF = "Off";
 string RelayASK = "Ask";
 string RelayON = "On";
@@ -80,7 +80,7 @@ integer getJSONinteger(string jsonValue, string jsonKey, integer valueNow){
 /**
     since you can't directly check the agent's active group, this will get the group from the agent's attached items
 */
-integer agentIsGuard(key agent)
+integer agentHasGuard(key agent)
 {
     list attachList = llGetAttachedList(agent);
     integer item;
@@ -187,7 +187,7 @@ setRelayState(integer on) {
             sendJSON("relayCommand", RelayASK, avatarKey);
         } else {
             // Heavy or hardcore
-            relayCheckboxState = TRUE;
+            relayCheckboxState = 1;
             sayDebug("setRelayState: "+(string)level+" "+RelayON);
             sendJSON("relayCommand", RelayON, avatarKey);
         }
@@ -206,7 +206,7 @@ lockMenu(key avatarKey)
             "• Off has no RLV restrictions.\n" +
             "• Light and Medium can be switched Off any time.\n" +
             "• Heavy requires you to acitvely Safeword out.\n" +
-            "• Hardcore has no safeword. To be released, you must ask a Guard.";
+            "• Hardcore has no safeword. To be released, you must ask a Guard.";
             
         // lockLevels: 0=Off 1=Light 2=Medium 3=Heavy 4=Hardcore
         // convert our locklevel to an integer
@@ -215,11 +215,11 @@ lockMenu(key avatarKey)
         sayDebug("lockMenu iLocklevel:"+(string)iLockLevel);
         // make a list of wjether each lock level is available from that lock level
         // lockLevel: 0=off, 1=light, 2=medium, 3=heavy, 4=hardcore
-        list lockListOff = [FALSE, TRUE, TRUE, TRUE, FALSE];
-        list lockListLight = [TRUE, FALSE, TRUE, TRUE, FALSE];
-        list lockListMedium = [TRUE, TRUE, FALSE, TRUE, FALSE];
-        list lockListHeavy = [FALSE, FALSE, FALSE, FALSE, TRUE];
-        list lockListHardcore = [FALSE, FALSE, FALSE, FALSE, FALSE];
+        list lockListOff = [0, 1, 1, 1, 0];
+        list lockListLight = [1, 0, 1, 1, 0];
+        list lockListMedium = [1, 1, 0, 1, 0];
+        list lockListHeavy = [0, 0, 0, 0, 1];
+        list lockListHardcore = [0, 0, 0, 0, 0];
         list lockLists = lockListOff + lockListLight + lockListMedium + lockListHeavy + lockListHardcore; // strided list
         list lockListMenu = llList2List(lockLists, iLockLevel*5, (iLockLevel+1)*5); // list of lock levels to add to menu
         sayDebug("lockMenu lockListMenu:"+(string)lockListMenu);
@@ -254,17 +254,17 @@ doLockMenu(key avatarKey, string message, string messageButtonsTrimmed) {
     } else if (message == "⨷ Hardcore") {
         sayDebug("listen set lockLevel:\""+lockLevel+"\"");
         sendJSON(RLV, "Hardcore", avatarKey);
-        relayCheckboxState = TRUE;
+        relayCheckboxState = 1;
         setRelayState(relayCheckboxState);
         
     // Relay
     } else if (message == menuCheckbox("Relay", relayCheckboxState)) {
         // RelayState() now returns what the state is now,
         // which the wearer wants to change to the opposite.
-        if (relayCheckboxState) {
-            relayCheckboxState = FALSE;
+        if (relayCheckboxState == 1) {
+            relayCheckboxState = 0;
         } else {
-            relayCheckboxState = TRUE;
+            relayCheckboxState = 1;
         }
         sayDebug("listen set relayCheckboxState:"+(string)relayCheckboxState);
         setRelayState(relayCheckboxState);
@@ -275,9 +275,9 @@ doLockMenu(key avatarKey, string message, string messageButtonsTrimmed) {
         sendJSON(RLV, messageButtonsTrimmed, avatarKey);
         if (messageButtonsTrimmed == "Heavy") {
             sayDebug("listen lockLevel Heavy, so turn on renamer");
-            renamerActive = TRUE;
+            renamerActive = 1;
             sendJSONCheckbox(buttonSpeech, "Renamer", avatarKey, renamerActive);
-            relayCheckboxState = TRUE;
+            relayCheckboxState = 1;
             }
         setRelayState(relayCheckboxState);
         // settingsMenu(avatarKey);
@@ -294,7 +294,7 @@ confirmHardcore(key avatarKey) {
     sayDebug("confirmHardcore");
     if (avatarKey == llGetOwner()) {
         string message = "Set your Lock Level to Hardcore?\n"+
-        "• Hardcore has the Heavy restrictions\n"+
+        "• Hardcore has the Heavy restrictions\n"+
         "• Hardcore has no safeword.\n"+
         "• To be released from Hardcore, you must ask a Guard.\n\n"+
         "Confirm that you want the Hardcore lock.";
@@ -317,8 +317,8 @@ default
             if (whereThing > -1) {
                 integer thingLength = llStringLength(thing)-1;
                 messageButtonsTrimmed = llDeleteSubString(messageButtonsTrimmed, whereThing, whereThing + thingLength);
+                }
             }
-        }
         sayDebug("listen messageButtonsTrimmed:"+messageButtonsTrimmed+" menuIdentifier: "+menuIdentifier);
         
         // display the menu item
@@ -355,21 +355,21 @@ default
 
     link_message(integer sender_num, integer num, string json, key avatarKey){
         // We listen in on link status messages and pick the ones we're interested in
-        //sayDebug("link_message json "+json);
-        assetNumber = getJSONstring(json, "assetNumber", assetNumber);
-        lockLevel = getJSONstring(json, "lockLevel", lockLevel);
-        renamerActive = getJSONinteger(json, "renamerActive", renamerActive);
-        rlvPresent = getJSONinteger(json, "rlvPresent", rlvPresent);
-        if (!rlvPresent) {
-            renamerActive = FALSE;
-        }
+            //sayDebug("link_message json "+json);
+            assetNumber = getJSONstring(json, "assetNumber", assetNumber);
+            lockLevel = getJSONstring(json, "lockLevel", lockLevel);
+            renamerActive = getJSONinteger(json, "renamerActive", renamerActive);
+            rlvPresent = getJSONinteger(json, "rlvPresent", rlvPresent);
+            if (rlvPresent == 0) {
+                renamerActive = 0;
+            }
 
-        if(getJSONstring(json, "menu", "") == RLV)
-        {
-            menuIdentifier = RLV;
-            lockMenu(avatarKey);
+            if(getJSONstring(json, "menu", "") == RLV)
+            {
+                menuIdentifier = RLV;
+                lockMenu(avatarKey);
+            }
         }
-    }
 
     timer()
     {

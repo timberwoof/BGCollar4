@@ -2,9 +2,9 @@
 // Menu script for Black Gazza Collar 4
 // Timberwoof Lupindo
 // June 2019
-string version = "2023-03-08";
+string version = "2022-09-06";
 
-integer OPTION_DEBUG = FALSE;
+integer OPTION_DEBUG = 0;
 
 integer menuChannel = 0;
 integer menuListen = 0;
@@ -16,10 +16,10 @@ integer wearerListen = 0;
 string menuPhrase;
 
 // Punishments
-integer allowZapLow = TRUE;
-integer allowZapMed = TRUE;
-integer allowZapHigh = TRUE;
-integer allowVision = TRUE;
+integer allowZapLow = 1;
+integer allowZapMed = 1;
+integer allowZapHigh = 1;
+integer allowVision = 1;
 
 string mood;
 string class = "white";
@@ -29,9 +29,9 @@ list classesLong = ["Unassigned Transfer", "Sexual Deviant", "Mechanic", "Genera
 string RLV = "RLV";
 string lockLevel;
 string lockLevelOff = "Off";
-integer rlvPresent = FALSE;
-integer renamerActive = FALSE;
-integer DisplayTokActive = FALSE;
+integer rlvPresent = 0;
+integer renamerActive = 0;
+integer DisplayTokActive = 0;
 string RelayLockState = "Off"; // what the relay told us
 
 string crime = "Unknown";
@@ -103,7 +103,7 @@ integer getJSONinteger(string jsonValue, string jsonKey, integer valueNow){
 /**
     since you can't directly check the agent's active group, this will get the group from the agent's attached items
 */
-integer agentIsGuard(key agent)
+integer agentHasGuard(key agent)
 {
     list attachList = llGetAttachedList(agent);
     integer item;
@@ -198,6 +198,19 @@ integer getLinkWithName(string name) {
     return -1; // No prim with that name, return -1.
 }
 
+// Menus and Handlers ****************
+
+attachStartup(string calledby) {
+    sayDebug("attachStartup("+calledby+")");
+    // set up chanel 1 menu command
+    string canonicalName = llToLower(llKey2Name(llGetOwner()));
+    list canoncialList = llParseString2List(llToLower(canonicalName), [" "], []);
+    string initials = llGetSubString(llList2String(canoncialList,0),0,0) + llGetSubString(llList2String(canoncialList,1),0,0);
+    menuPhrase = initials + "menu";
+    llOwnerSay("Access the collar menu by typing /1"+menuPhrase);
+    wearerListen = llListen(wearerChannel, "", "", menuPhrase);
+}
+
 mainMenu(key avatarKey) {
     string message = menuMain + "\n";
 
@@ -209,58 +222,58 @@ mainMenu(key avatarKey) {
         llInstantMessage(avatarKey, "The collar menu is being accessed by someone else.");
         sayDebug("Told " + llKey2Name(avatarKey) + "that the collar menu is being accessed by someone else.");
         return;
-    }
+        }
     
     // assume some things are not available
-    integer doPunish = FALSE;
-    integer doForceSit = FALSE;
-    integer doLeash = FALSE;
-    integer doSafeword = FALSE;
-    integer doRelease = FALSE;
+    integer doPunish = 0;
+    integer doForceSit = 0;
+    integer doLeash = 0;
+    integer doSafeword = 0;
+    integer doRelease = 0;
     
     // Collar functions controlled by Mood: punish, force sit, leash, speech
     if (mood == moodDND | mood == moodLockup) {
         if (avatarKey == llGetOwner()) {
-            doPunish = TRUE;
-            doForceSit = TRUE;
-            doLeash = TRUE;
+            doPunish = 1;
+            doForceSit = 1;
+            doLeash = 1;
         }
     } else if (mood == moodOOC) {
             // everyone can do everything (but you better ask)
-            doPunish = TRUE;
-            doForceSit = TRUE;
-            doLeash = TRUE;
+            doPunish = 1;
+            doForceSit = 1;
+            doLeash = 1;
     } else { // mood == anything else
         if (avatarKey == llGetOwner()) {
             // wearer can't do anything
-        } else if (agentIsGuard(avatarKey)) {
+        } else if (agentHasGuard(avatarKey)) {
             // Guards can do anything
-            doPunish = TRUE;
-            doForceSit = TRUE;
-            doLeash = TRUE;
+            doPunish = 1;
+            doForceSit = 1;
+            doLeash = 1;
         } else {
             // other prisoners can leash and force sit
-            doForceSit = TRUE;
-            doLeash = TRUE;
+            doForceSit = 1;
+            doLeash = 1;
         }
     }
     
     // Collar functions overridden by lack of RLV
     if (!rlvPresent) {
-        doForceSit = FALSE;
-        doLeash = FALSE;
+        doForceSit = 0;
+        doLeash = 0;
         message = message + "\nSome functions are available ony when RLV is present.";
     }
     
     // Collar functions controlled by locklevel: Safeword and Release
-    if (lockLevel == "Hardcore" && agentIsGuard(avatarKey)) {
-        doRelease = TRUE;
+    if (lockLevel == "Hardcore" && agentHasGuard(avatarKey)) {
+        doRelease = 1;
     } else {
         message = message + "\nRelease command is available to a Guard when prisoner is in RLV Hardcore mode.";
     }
     
     if (avatarKey == llGetOwner() && lockLevel != "Hardcore" && lockLevel != lockLevelOff) {
-        doSafeword = TRUE;
+        doSafeword = 1;
     } else {
         message = message + "\nSafeword is availavle to the Prisoner in RLV levels Medium and Heavy.";
     }
@@ -327,7 +340,7 @@ infoGive(key avatarKey){
     // Prepare text of collar settings for the information menu
     string message = "Prisoner Information \n" +
     "\nNumber: " + assetNumber + "\n";
-    if (agentIsGuard(avatarKey) || avatarKey == llGetOwner()) {
+    if (!agentHasGuard(avatarKey) || avatarKey == llGetOwner()) {
         string ZapLevels = "";
         ZapLevels = menuCheckbox("Low", allowZapLow) + "  " +
         menuCheckbox("Medium", allowZapMed) +  "  " +
@@ -378,17 +391,16 @@ infoGive(key avatarKey){
     message = llGetSubString(message, 0, 511);
     setUpMenu(buttonInfo, avatarKey, message, buttons);
 }
-
 doSetPunishmentLevels(key avatarKey, string message)
 {
     if (avatarKey == llGetOwner())
     {
         sayDebug("wearer sets allowable zap level: "+message);
         if (message == "") {
-            allowZapLow = TRUE;
-            allowZapMed = TRUE;
-            allowZapHigh = TRUE;
-            allowVision = TRUE;
+            allowZapLow = 1;
+            allowZapMed = 1;
+            allowZapHigh = 1;
+            allowVision = 1;
         }
         else if (message == "Zap Low") {
             allowZapLow = !allowZapLow;
@@ -399,8 +411,8 @@ doSetPunishmentLevels(key avatarKey, string message)
         //} else if (message == "Vision") {
         //    allowVision = !allowVision;
         }
-        if (!(allowZapLow & allowZapMed & allowZapHigh)) {
-            allowZapHigh = TRUE;
+        if (allowZapLow + allowZapMed + allowZapHigh == 0) {
+            allowZapHigh = 1;
         }
         string zapJsonList = llList2Json(JSON_ARRAY, [allowZapLow, allowZapMed, allowZapHigh]);
         sendJSON("ZapLevels", zapJsonList, avatarKey);
@@ -427,20 +439,14 @@ default
             sendJSON("threat", "None", "");
             sendJSON("mood", moodOOC, "");
             doSetPunishmentLevels(llGetOwner(),""); // initialize
+        } else {
+            sayDebug("MainMenu: state_entry");
         }
-
-        sayDebug("MainMenu: state_entry");
     }
 
     attach(key avatar) {
-        if(llGetAttached() == 0) return;
         sayDebug("attach");
-        string canonicalName = llToLower(llKey2Name(llGetOwner()));
-        list canoncialList = llParseString2List(llToLower(canonicalName), [" "], []);
-        string initials = llGetSubString(llList2String(canoncialList,0),0,0) + llGetSubString(llList2String(canoncialList,1),0,0);
-        menuPhrase = initials + "menu";
-        llOwnerSay("Access the collar menu by typing /1"+menuPhrase);
-        wearerListen = llListen(wearerChannel, "", "", menuPhrase);
+        attachStartup("attach");
         sayDebug("attach done");
     }
 
@@ -479,8 +485,8 @@ default
             if (whereThing > -1) {
                 integer thingLength = llStringLength(thing)-1;
                 messageButtonsTrimmed = llDeleteSubString(messageButtonsTrimmed, whereThing, whereThing + thingLength);
+                }
             }
-        }
         sayDebug("listen messageButtonsTrimmed:"+messageButtonsTrimmed+" menuIdentifier: "+menuIdentifier);
         
         // display the menu item
@@ -543,9 +549,9 @@ default
         DisplayTokActive = getJSONinteger(json, "DisplayTokActive", DisplayTokActive);
         batteryGraph = getJSONstring(json, "batteryGraph", batteryGraph);
         rlvPresent = getJSONinteger(json, "rlvPresent", rlvPresent);
-        if (!rlvPresent) {
-            renamerActive = FALSE;
-            DisplayTokActive = FALSE;
+        if (rlvPresent == 0) {
+            renamerActive = 0;
+            DisplayTokActive = 0;
         }
         if(getJSONstring(json, "menu", "") == menuMain)
         {
