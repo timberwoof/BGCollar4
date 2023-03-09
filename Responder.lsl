@@ -5,7 +5,6 @@
 
 integer responderChannel;
 integer responderListen;
-string lockLevel;
 
 integer OPTION_DEBUG = FALSE;
 
@@ -76,11 +75,12 @@ string mood;
 string class;
 string crime;
 string threat;
-string locklevel;
+string lockLevel;
 string zaplevels;
 integer batteryPercent;
+string battery;
 
-list symbols = ["role", "assetNumber", "mood", "class", "crime", "threat", "lockLevel", "batteryPercent", "ZapLevels"];
+list symbols = ["role", "assetNumber", "mood", "class", "crime", "threat", "lockLevel", "Battery", "batteryPercent", "ZapLevels"];
 list values;
 
 
@@ -101,18 +101,19 @@ default
         class = getJSONstring(json, "class", class);
         threat = getJSONstring(json, "threat", threat);
         mood = getJSONstring(json, "mood", mood);
-        locklevel = getJSONstring(json, "locklevel", locklevel);
+        lockLevel = getJSONstring(json, "lockLevel", lockLevel);
+        battery = getJSONstring(json, "Battery", battery);
         batteryPercent = getJSONinteger(json, "batteryPercent", batteryPercent);
         zaplevels = getJSONstring(json, "ZapLevels", zaplevels);
-        values = [Role, assetNumber, mood, class, crime, threat, locklevel, batteryPercent, zaplevels];
+        values = [Role, assetNumber, mood, class, crime, threat, lockLevel, batteryPercent, zaplevels];
     }
 
     listen(integer channel, string name, key id, string json)
     {
         sayDebug("listen channel:"+(string)channel+" name:"+name+" json:"+json);
         string value = getJSONstring(json, "request", "");
-        // {"request":["Mood","Class","LockLevel"]}
-        if ((batteryPercent > 4) && (value != "")) {
+        // {"request":["mood","class","lockLevel"]}
+        if ((battery == "OFF") || ((batteryPercent > 4) && (value != ""))) {
             sayDebug("listen request value: "+value);
             list requests = llJson2List(value);
             integer i;
@@ -127,11 +128,13 @@ default
                 sayDebug(symbolkey+" -> "+value);
                 responses = responses + [symbolkey, value];
             }
-            string jsonlist = llList2Json(JSON_OBJECT, responses); // [{"Mood":"OOC"},{"Class":"blue"},{"LockLevel":"Off"}]
+            string jsonlist = llList2Json(JSON_OBJECT, responses); // [{"mood":"OOC"},{"class":"blue"},{"lockLevel":"Off"}]
             sayDebug("jsonlist:"+jsonlist);
-            string jsonresponse = llList2Json(JSON_OBJECT, ["response", jsonlist]); // {"response":[{"Mood":"OOC"},{"Class":"blue"},{"LockLevel":"Off"}]}
+            string jsonresponse = llList2Json(JSON_OBJECT, ["response", jsonlist]); // {"response":[{"mood":"OOC"},{"class":"blue"},{"lockLevel":"Off"}]}
             sayDebug("jsonresponse:"+jsonresponse);
             llWhisper(responderChannel, jsonresponse);
+        } else {
+            sayDebug("batteryPercent < 4 or value = ''");
         }
 
         if (name == "L-CON Battery Charger") {
