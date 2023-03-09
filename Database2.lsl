@@ -208,7 +208,8 @@ default
         integer listRequestIndex = llListFindList(databaseQuery, [request_id]);
         if (listRequestIndex == -1) return; // skip response if this script no required it
         
-        // if response status code not equal 200(OK) then remove item with request_id from list
+        // if response status code not equal 200(OK)
+        // then remove item with request_id from list and exit
         if (status != 200)
         {
             displayCentered("DB Error "+(string)status);
