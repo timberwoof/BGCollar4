@@ -8,7 +8,7 @@
 // July 2019, February 2020
 // version: 2021-12-29
 
-integer OPTION_DEBUG = 0;
+integer OPTION_DEBUG = FALSE;
 list databaseQuery;
 list isEditCrimesList;
 string myQueryStatus;
@@ -86,7 +86,7 @@ string AgentKeyWithRole(string agentKey, integer slot) {
 // fire off a request to the crime database for this wearer.
 // Reads global iSlot to determine which character to get.
 sendDatabaseQuery(integer iSlot, string crimes) {
-    if (llGetAttached() != 0) {
+    if (llGetAttached()) {
         displayCentered("Accessing DB");
         string URL = URL_BASE;
         if(crimes != "" && assetNumber(characterSlot) != "" && assetNumber(characterSlot) != "P-00000")
@@ -213,7 +213,7 @@ default
         if(listRequestIndex == -1) return; // skip response if this script no required it
         if(status != 200) // remove item with request_id from list if response status code not equal 200(OK)
         {
-            displayCentered("error "+(string)status);
+            displayCentered("DB Error "+(string)status);
             databaseQuery = llDeleteSubList(databaseQuery, listRequestIndex, listRequestIndex); // removes unnecessary request_id from memory to save
             isEditCrimesList = llDeleteSubList(isEditCrimesList, listRequestIndex, listRequestIndex); // also removes unnecessary crimes record from memory to save
             return;
@@ -230,7 +230,7 @@ default
         databaseQuery = llDeleteSubList(databaseQuery, listRequestIndex, listRequestIndex); // removes unnecessary request_id from memory to save
         isEditCrimesList = llDeleteSubList(isEditCrimesList, listRequestIndex, listRequestIndex);
 
-        displayCentered("status "+(string)status);
+        displayCentered("DB Status "+(string)status);
         string assetNumber = "P-00000";
         string theCrime = "Unregistered";
         string theName = llGetOwner();
