@@ -46,13 +46,13 @@ sayDebug(string message)
     }
 }
 
-integer agentHasGuard(key agent)
+integer agentIsGuard(key agent)
 {
     list attachList = llGetAttachedList(agent);
     integer item;
     while(item < llGetListLength(attachList))
     {
-        if(llList2Key(llGetObjectDetails(llList2Key(attachList, item), [OBJECT_GROUP]), 0) == guardGroupKey) return TRUE;
+        if (llList2Key(llGetObjectDetails(llList2Key(attachList, item), [OBJECT_GROUP]), 0) == guardGroupKey) return TRUE;
         item++;
     }
     return FALSE;
@@ -89,19 +89,15 @@ sendDatabaseQuery(integer iSlot, string crimes) {
     if (llGetAttached()) {
         displayCentered("Accessing DB");
         string URL = URL_BASE;
-        if(crimes != "" && assetNumber(characterSlot) != "" && assetNumber(characterSlot) != "P-00000")
-        {
+        if (crimes != "" && assetNumber(characterSlot) != "" && assetNumber(characterSlot) != "P-00000") {
             URL += URL_ADD;
             isEditCrimesList += [TRUE];
-        }
-        else
-        {
+        } else {
             URL += URL_READ;
             isEditCrimesList += [FALSE];
         }
         URL += AgentKeyWithRole((string)llGetOwner(),iSlot);
-        if(crimes != "" && assetNumber(characterSlot) != "" && assetNumber(characterSlot) != "P-00000")
-        {
+        if (crimes != "" && assetNumber(characterSlot) != "" && assetNumber(characterSlot) != "P-00000") {
             URL += "&sentence=" + llList2String(sentenceList, characterSlot);
             URL += "&name=" + name(characterSlot);
             URL += "&crime=" + crimes;
@@ -182,7 +178,7 @@ characterMenu() {
 
 setCharacterCrimes(key avatarKey)
 {
-    if(avatarKey == llGetOwner() || !agentHasGuard(avatarKey)) return;
+    if (avatarKey == llGetOwner() || !agentIsGuard(avatarKey)) return;
     string message = assetNumber(characterSlot) + "\nCurrent Crimes: " + crime(characterSlot) + "\nPlease set new Crimes: ";
     crimeSetChannel = -(llFloor(llFrand(1000)+1000));
     crimeSetListen = llListen(crimeSetChannel, "", avatarKey, "");
@@ -210,32 +206,44 @@ default
     // handle the response from the crime database
     {
         integer listRequestIndex = llListFindList(databaseQuery, [request_id]);
-        if(listRequestIndex == -1) return; // skip response if this script no required it
-        if(status != 200) // remove item with request_id from list if response status code not equal 200(OK)
+        if (listRequestIndex == -1) return; // skip response if this script no required it
+        
+        // if response status code not equal 200(OK) then remove item with request_id from list
+        if (status != 200)
         {
             displayCentered("DB Error "+(string)status);
-            databaseQuery = llDeleteSubList(databaseQuery, listRequestIndex, listRequestIndex); // removes unnecessary request_id from memory to save
-            isEditCrimesList = llDeleteSubList(isEditCrimesList, listRequestIndex, listRequestIndex); // also removes unnecessary crimes record from memory to save
-            return;
-        }
 
-        if(llList2Integer(isEditCrimesList, listRequestIndex)) // process response like "crime setter" if request_id num equal with crimeList and this cell have TRUE record
-        {
-            crimeList = llListReplaceList(crimeList, [tempCrimes], characterSlot, characterSlot);
-            sendJSON("crime", crime(characterSlot), llGetOwner());
-            databaseQuery = llDeleteSubList(databaseQuery, listRequestIndex, listRequestIndex); // removes unnecessary request_id from memory to save
+            // removes unnecessary request_id from memory to save
+            databaseQuery = llDeleteSubList(databaseQuery, listRequestIndex, listRequestIndex);
+            
+            // also removes unnecessary crimes record from memory to save
             isEditCrimesList = llDeleteSubList(isEditCrimesList, listRequestIndex, listRequestIndex);
             return;
         }
-        databaseQuery = llDeleteSubList(databaseQuery, listRequestIndex, listRequestIndex); // removes unnecessary request_id from memory to save
+
+        // if request_id num equal with crimeList and this cell have TRUE record
+        // then process response like "crime setter"
+        if (llList2Integer(isEditCrimesList, listRequestIndex))
+        {
+            crimeList = llListReplaceList(crimeList, [tempCrimes], characterSlot, characterSlot);
+            sendJSON("crime", crime(characterSlot), llGetOwner());
+            
+            // removes unnecessary request_id from memory to save
+            databaseQuery = llDeleteSubList(databaseQuery, listRequestIndex, listRequestIndex);
+            isEditCrimesList = llDeleteSubList(isEditCrimesList, listRequestIndex, listRequestIndex);
+            return;
+        }
+
+        // removes unnecessary request_id from memory to save
+        databaseQuery = llDeleteSubList(databaseQuery, listRequestIndex, listRequestIndex);
         isEditCrimesList = llDeleteSubList(isEditCrimesList, listRequestIndex, listRequestIndex);
 
         displayCentered("DB Status "+(string)status);
         string assetNumber = "P-00000";
         string theCrime = "Unregistered";
         string theName = llGetOwner();
-        // decode the response
-        // looks like
+        
+        // decode the response which looks like
         // Timberwoof Lupindo,0,Piracy; Illegal Transport of Biogenics,284ba63f-378b-4be6-84d9-10db6ae48b8d,P-60361
         integer whereTwoCommas = llSubStringIndex(message, ",,");
         if (whereTwoCommas > 1) {
@@ -283,7 +291,7 @@ default
         string request = getJSONstring(json, "database", "");
         if (request == "getupdate") sendDatabaseQuery(characterSlot, "");
         if (request == "setcharacter") setCharacter();
-        if(request == "setcrimes") setCharacterCrimes(id);
+        if (request == "setcrimes") setCharacterCrimes(id);
     }
     
     listen(integer channel, string name, key id, string text) {
@@ -296,12 +304,12 @@ default
             menuChannel = 0;
             llSetTimerEvent(0);
         }
-        else if(channel == crimeSetChannel)
+        else if (channel == crimeSetChannel)
         {
             llListenRemove(crimeSetListen);
             crimeSetChannel = 0;
             llSetTimerEvent(0);
-            if(assetNumber(characterSlot) != "" && assetNumber(characterSlot) != "P-00000" && id != llGetOwner() && agentHasGuard(id))
+            if (assetNumber(characterSlot) != "" && assetNumber(characterSlot) != "P-00000" && id != llGetOwner() && agentIsGuard(id))
                 sendDatabaseQuery(characterSlot, text);
         }
     }
@@ -311,7 +319,7 @@ default
             llListenRemove(menuListen);
             menuChannel = 0;
         }
-        if(crimeSetListen != 0)
+        if (crimeSetListen != 0)
         {
             llListenRemove(crimeSetListen);
             crimeSetChannel = 0;
