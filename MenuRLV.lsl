@@ -206,7 +206,7 @@ lockMenu(key avatarKey)
             "• Off has no RLV restrictions.\n" +
             "• Light and Medium can be switched Off any time.\n" +
             "• Heavy requires you to acitvely Safeword out.\n" +
-            "• Hardcore has no safeword. To be released, you must ask a Guard.";
+            "• Hardcore has no safeword. To be released, you must ask a Guard.";
             
         // lockLevels: 0=Off 1=Light 2=Medium 3=Heavy 4=Hardcore
         // convert our locklevel to an integer
