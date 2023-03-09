@@ -417,7 +417,7 @@ doSetPunishmentLevels(key avatarKey, string message)
         }
         // If the wearer turns them all off, then high gets set.
         if (!(allowZapLow || allowZapMed || allowZapHigh)){
-             allowZapHigh = TRUE;
+            allowZapHigh = TRUE;
         }
         string zapJsonList = llList2Json(JSON_ARRAY, [allowZapLow, allowZapMed, allowZapHigh]);
         sayDebug("doSetPunishmentLevels zapJsonList after: "+(string)[allowZapLow, allowZapMed, allowZapHigh]);
