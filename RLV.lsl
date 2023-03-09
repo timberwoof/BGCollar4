@@ -308,9 +308,7 @@ startZap(string zapLevel, key who) {
             OADBuzz(zapLevel);
             llLoopSound(soundZapLoop, 1.0);
             if (haveAnimatePermissions) {
-                if(zapindex == 0) llStartAnimation("zap1");
-                if(zapindex == 1) llStartAnimation("zap2");
-                if(zapindex == 2) llStartAnimation("zap3_fall");
+                llStartAnimation(zapLevel);
             }
         
             llSleep(zapTime);
@@ -320,9 +318,7 @@ startZap(string zapLevel, key who) {
             sayDebug("startZap llStopSound();");
             llStopSound();
             if (haveAnimatePermissions) {
-                llStopAnimation("zap1");
-                llStopAnimation("zap2");
-                llStopAnimation("zap3_fall");
+                llStopAnimation(zapLevel);
             }
         } else {
             sayDebug("Not enough charge for a zap.");
