@@ -2,30 +2,13 @@
 // Display script for Black Gazza Stocks 4
 // Timberwoof Lupindo
 // June 2019
-string version = "2023-03-30";
+string version = "2023-03-28";
 
 // This script handles all display elements of Black Gazza Collar 4.
 // • alphanumeric display
 // • blinky lights
 // • battery display
 // • floaty text
-
-// This script requires some prims to have specific names:
-// PilotLight
-// blinky1
-// blinky2
-// blinky3
-// blinky4
-// DisplayFrame
-// powerDisplay
-// hardware
-// powerHoseNozzle
-// leashpoint right
-// leashpoint left
-// leashpoint out left
-// padlock1
-// padlock2
-// padlock3
 
 integer OPTION_DEBUG = FALSE;
 
@@ -326,10 +309,13 @@ displayBattery(integer percent)
         brightnessMultiplier = 0.0;
     }
     sayDebug("displayBattery("+(string)percent+") brightnessMultiplier:" + (string)brightnessMultiplier);
-    llSetLinkPrimitiveParamsFast(LinkAlphanumFrame, [PRIM_COLOR, FaceAlphanumFrame, classColor*brightnessMultiplier, 1.0]);
-    llSetLinkPrimitiveParamsFast(LinkAlphanumFrame, [PRIM_GLOW, FaceAlphanumFrame, 0.3]);
+    //llSetLinkColor(LinkBlinky, batteryLightColor, batteryIconFace);
+    //llSetLinkPrimitiveParamsFast(LinkBlinky,[PRIM_COLOR, batteryIconFace, batteryLightColor*brightnessMultiplier, 1.0]);
+    //llSetLinkPrimitiveParamsFast(LinkBlinky, [PRIM_GLOW, ALL_SIDES, batteryLightGlow]);
+    //llSetLinkPrimitiveParamsFast(LinkBlinky, [PRIM_GLOW, FaceAlphanumFrame, 0.3]);
     llSetLinkPrimitiveParamsFast(batteryIconLink,[PRIM_TEXTURE, batteryIconFace, batteryIconID, <0.2, 0.75, 0.0>, <batteryIconHoffset, 0.0, 0.0>, 1.5708]);
     llSetLinkPrimitiveParamsFast(batteryIconLink,[PRIM_COLOR, batteryIconFace, batteryIconColor*brightnessMultiplier, 1.0]);
+    //llSetLinkPrimitiveParamsFast(LinkBlinky,[PRIM_COLOR, FaceBlinkyMood, moodColor*brightnessMultiplier, 1.0]);
     setTextColor(moodColor*brightnessMultiplier);
     setclass(class);
 }
