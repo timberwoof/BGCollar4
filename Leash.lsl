@@ -24,6 +24,8 @@ string action;
 list leashPoints;
 integer leashRingPrim;
 
+key guardGroupKey = "b3947eb2-4151-bd6d-8c63-da967677bc69";
+
 sayDebug(string message)
 {
     if (OPTION_DEBUG)
@@ -90,6 +92,21 @@ setUpMenu(key avatarKey, string message, list buttons)
     llSetTimerEvent(30);
 }
 
+/**
+    since you can't directly check the agent's active group, this will get the group from the agent's attached items
+*/
+integer agentIsGuard(key agent)
+{
+    list attachList = llGetAttachedList(agent);
+    integer item;
+    while(item < llGetListLength(attachList))
+    {
+        if(llList2Key(llGetObjectDetails(llList2Key(attachList, item), [OBJECT_GROUP]), 0) == guardGroupKey) return TRUE;
+        item++;
+    }
+    return FALSE;
+}
+
 leashMenuFilter(key avatarKey) {
     // action = "Leash" or "ForceSit"
     // If an inmate wants to leash you, ask your permission.
@@ -98,7 +115,7 @@ leashMenuFilter(key avatarKey) {
     sayDebug("leashMenuFilter avatarKey: "+(string)avatarKey);
     sayDebug("leashMenuFilter llGetOwner: "+(string)llGetOwner());
     sayDebug("leashMenuFilter action: "+action);
-    if (avatarKey != llGetOwner() && llSameGroup(avatarKey) && avatarKey != leasherAvatar) {
+    if (avatarKey != llGetOwner() && !agentIsGuard(avatarKey) && avatarKey != leasherAvatar) {
         // another inmate wants to mess with the leash
         sayDebug("leashMenuFilter ask");
         leasherAvatar = avatarKey; // remember who wanted to leash
