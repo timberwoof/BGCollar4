@@ -15,7 +15,7 @@ sayDebug(string message)
         llOwnerSay("Responder: "+message);
     }
 }
-    
+
 string getJSONstring(string jsonValue, string jsonKey, string valueNow){
     string result = valueNow;
     string value = llJsonGetValue(jsonValue, [jsonKey]);
@@ -24,7 +24,7 @@ string getJSONstring(string jsonValue, string jsonKey, string valueNow){
     }
     return result;
 }
-    
+
 integer getJSONinteger(string jsonValue, string jsonKey, integer valueNow){
     integer result = valueNow;
     string value = llJsonGetValue(jsonValue, [jsonKey]);
@@ -46,7 +46,7 @@ integer uuidToInteger(key uuid)
     string last2 = llGetSubString(last,6,12);
     list lasts = [last1, last2];
     uuidparts = llListReplaceList(uuidparts, lasts, 4, 4);
-    
+
     integer sum = 0;
     integer i = 0;
     // take each uuid part
@@ -69,7 +69,7 @@ integer uuidToInteger(key uuid)
     return sum;
 }
 
-string Role = "inmate";
+string role = "inmate";
 string assetNumber;
 string mood;
 string class;
@@ -80,7 +80,8 @@ string zaplevels;
 integer batteryPercent;
 string battery;
 
-list symbols = ["role", "AssetNumber", "Mood", "Class", "Crime", "Threat", "LockLevel", "Battery", "BatteryPercent", "ZapLevels"];
+// Symbols according to Responder Protocol.
+list symbols = ["role", "assetNumber", "mood", "class", "crime", "threat", "lockLevel", "Battery", "batteryPercent", "ZapLevels"];
 list values;
 
 
@@ -91,7 +92,7 @@ default
         responderChannel = uuidToInteger(llGetOwner());
         responderListen = llListen(responderChannel,"", "", "");
     }
-    
+
     link_message(integer sender_num, integer num, string json, key id)
     {
     // We listen in on link status messages and pick the ones we're interested in
@@ -105,7 +106,7 @@ default
         battery = getJSONstring(json, "Battery", battery);
         batteryPercent = getJSONinteger(json, "BatteryPercent", batteryPercent);
         zaplevels = getJSONstring(json, "ZapLevels", zaplevels);
-        values = [Role, assetNumber, mood, class, crime, threat, lockLevel, batteryPercent, zaplevels];
+        values = [role, assetNumber, mood, class, crime, threat, lockLevel, batteryPercent, zaplevels];
     }
 
     listen(integer channel, string name, key id, string json)

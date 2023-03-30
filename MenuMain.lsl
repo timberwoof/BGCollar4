@@ -129,7 +129,7 @@ setUpMenu(string identifier, key avatarKey, string message, list buttons)
     sendJSON("DisplayTemp", "menu access", avatarKey);
     menuIdentifier = identifier;
     menuAgentKey = avatarKey; // remember who clicked
-    string completeMessage = assetNumber + " Collar: " + message;
+    string completeMessage = assetNumber + message;
     menuChannel = -(llFloor(llFrand(10000)+1000));
     menuListen = llListen(menuChannel, "", avatarKey, "");
     llSetTimerEvent(30);
