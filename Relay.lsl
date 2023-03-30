@@ -448,7 +448,7 @@ default
 
     link_message(integer src, integer num, string json, key id)
     {
-        string relayCommand = getJSONstring(json, "relayCommand", "");
+        string relayCommand = getJSONstring(json, "RelayCommand", "");
         if (relayCommand == RelayON)
         {
             sayDebug("link_message msg:"+json);

@@ -2,10 +2,10 @@
 // Speech script for Black Gazza Collar 4
 // Timberwoof Lupindo
 // March 2020
-// version: 2023-03-08
+// version: 2023-03-30
 
 // Handles all speech-related functions for the collar
-// Renamer - Gag - Bad Words
+// Renamer - Gag - Bad Words 
 
 integer OPTION_DEBUG = FALSE;
 
@@ -76,7 +76,7 @@ processSpeech(string speech, key avatarKey){
     sayDebug("processSpeech("+speech+")");
     if (badWordsActive | DisplayTokActive) {
         sayDebug("processSpeech listWordsSpoken");
-        listWordsSpoken = llParseString2List(llToLower(speech),
+        listWordsSpoken = llParseString2List(llToLower(speech), 
             [" "], [",", ".", ";", ":", "!", "?", "'", "\""]);
     }
         
@@ -184,7 +184,6 @@ default
         }
         if (speechCommand == "RenamerON") {
             if (rlvPresent) {
-                //sendRLVReleaseCommand("link_message RenamerON"); // why ws this here?
                 sendRLVRestrictCommand("link_message RenamerON");
             } else {
                 sayDebug("link_message got RenamerON command but rlvPresent = 0");
@@ -233,7 +232,7 @@ default
             if (rlvPresent && renamerActive) {
                 sendRLVRestrictCommand("resetRenamer");
             }
-        }
+        }        
     }
     
     listen(integer channel, string name, key avatarKey, string message){

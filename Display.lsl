@@ -2,7 +2,7 @@
 // Display script for Black Gazza Collar 4
 // Timberwoof Lupindo
 // June 2019
-string version = "2023-03-28";
+string version = "2023-03-30";
 
 // This script handles all display elements of Black Gazza Collar 4.
 // • alphanumeric display
@@ -409,9 +409,9 @@ setclass(string class) {
 attachStartup(key theAvatar) {
     sayDebug("attachStartup");
     avatar = theAvatar;
-    mood = blinkyColorToMeaning(FaceBlinkyMood, moodColors, moodNames, "mood");
-    class = blinkyColorToMeaning(FaceBlinkyClass, classColors, classNames, "class");
-    threat = blinkyColorToMeaning(FaceBlinkyThreat, threatColors, threatLevels, "threat");
+    mood = blinkyColorToMeaning(FaceBlinkyMood, moodColors, moodNames, "Mood");
+    class = blinkyColorToMeaning(FaceBlinkyClass, classColors, classNames, "Class");
+    threat = blinkyColorToMeaning(FaceBlinkyThreat, threatColors, threatLevels, "Threat");
 }
 
 default
@@ -474,7 +474,7 @@ default
         sayDebug("link_message "+json);
 
         // IC/OOC Mood sets frame color, text color, and Blinky1
-        string value = llJsonGetValue(json, ["mood"]);
+        string value = llJsonGetValue(json, ["Mood"]);
         if (value != JSON_INVALID) {
             mood = value;
             integer moodi = llListFindList(moodNames, [mood]);
@@ -485,7 +485,7 @@ default
         }
 
         // Prisoner Class sets text color and blinky 3
-        value = llJsonGetValue(json, ["class"]);
+        value = llJsonGetValue(json, ["Class"]);
         if (value != JSON_INVALID) {
             class = value;
             setclass(class);
@@ -493,7 +493,7 @@ default
         }
 
         // Lock level sets blinky 2
-        value = llJsonGetValue(json, ["lockLevel"]);
+        value = llJsonGetValue(json, ["LockLevel"]);
         if (value != JSON_INVALID) {
             list lockLevels = ["Safeword", "Off", "Light", "Medium", "Heavy", "Hardcore"];
             list lockColors = [GREEN, BLACK, GREEN, YELLOW, ORANGE, RED];
@@ -506,7 +506,7 @@ default
         }
 
         // Threat level sets blinky 4
-        value = llJsonGetValue(json, ["threat"]);
+        value = llJsonGetValue(json, ["Threat"]);
         if (value != JSON_INVALID) {
             threat = value;
             integer threati = llListFindList(threatLevels, [threat]);
@@ -517,21 +517,21 @@ default
         }
 
         // Battery Level Report
-        value = llJsonGetValue(json, ["batteryPercent"]);
+        value = llJsonGetValue(json, ["BatteryPercent"]);
         if (value != JSON_INVALID) {
             batteryPercent = (integer)value;
             displayBattery(batteryPercent);
         }
         
         // Prisoner Crime
-        value = llJsonGetValue(json, ["crime"]);
+        value = llJsonGetValue(json, ["Crime"]);
         if (value != JSON_INVALID) {
             crime = value;
             displayTitler();
         }
 
         // Prisoner Asset Number
-        value = llJsonGetValue(json, ["assetNumber"]);
+        value = llJsonGetValue(json, ["AssetNumber"]);
         if (value != JSON_INVALID) {
             assetNumber = value;
             string firstName = "Unassigned";
@@ -591,7 +591,7 @@ default
         sayDebug("timer()");
         if (TIMER_REDISPLAY > 0) {
             if (assetNumber == unassignedAsset) {
-                sendJSON("database", "getupdate", llGetOwner());
+                sendJSON("Database", "getupdate", llGetOwner());
             }
             sayDebug("set and display assetNumber \""+assetNumber+"\"");
             displayCentered(assetNumber);

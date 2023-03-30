@@ -2,7 +2,7 @@
 // Menu and control script for Black Gazza Collar 4
 // Timberwoof Lupindo
 // July 2019
-// version: 2023-03-08
+// version: 2023-03-30
 
 // Handles all leash menu, authroization, and leashing functionality
 
@@ -13,7 +13,7 @@ string prisonerLockLevel = "";
 integer sitActive = FALSE;
 integer sitPending = FALSE;
 
-string prisonerNumber = "P-00000"; // to make the menus nice
+string assetNumber = "P-00000"; // to make the menus nice
 integer menuChannel = 0;
 integer menuListen = 0;
 key leasherAvatar;
@@ -87,7 +87,7 @@ list menuButtonActive(string title, integer onOff)
 setUpMenu(key avatarKey, string message, list buttons)
 // wrapper to do all the calls that make a simple menu dialog.
 {
-    string completeMessage = prisonerNumber + " Collar: " + message;
+    string completeMessage = assetNumber + " Collar: " + message;
     menuChannel = -(llFloor(llFrand(10000)+1000));
     llDialog(avatarKey, completeMessage, buttons, menuChannel);
     menuListen = llListen(menuChannel, "", avatarKey, "");
@@ -133,10 +133,10 @@ leashMenuFilter(key avatarKey) {
     } else {
         if (action == "Leash") {
             llInstantMessage(avatarKey, "You are not permitted to mess with the leash. "+llKey2Name(leasherAvatar)+" has the leash.");
-            llSay (0, prisonerNumber + " tugs on the leash.");
+            llSay (0, assetNumber + " tugs on the leash.");
         } else {
             llInstantMessage(avatarKey, "You are not permitted to stand.");
-            llSay (0, prisonerNumber + " struggles.");
+            llSay (0, assetNumber + " struggles.");
         }
     }
 
@@ -164,7 +164,7 @@ leashMenu(key avatarKey)
 // We passed all the tests. Present the leash menu.
 {
     sayDebug("leashMenu action:"+action+" sensorState:"+sensorState);
-    string message = "Set "+prisonerNumber+"'s Leash.";
+    string message = "Set "+assetNumber+"'s Leash.";
     list buttons = [];
     
     // you can't grab your own leash
@@ -191,7 +191,7 @@ sitMenu(key avatarKey, string calledBy)
 // We passed all the tests. Present the Sit menu.
 {
     sayDebug("sitMenu calledBy:"+calledBy+" action:"+action+" sensorState:"+sensorState);
-    string message = "Force "+prisonerNumber+" to sit.";
+    string message = "Force "+assetNumber+" to sit.";
     list buttons = [];
     buttons = buttons + menuButtonActive("Sit On", rlvPresent & !sitActive);
     buttons = buttons + menuButtonActive("Unsit", sitActive);
@@ -301,11 +301,10 @@ default
             leashMenuFilter(id);
         }
 
-        value = llJsonGetValue(json, ["assetNumber"]);
+        value = llJsonGetValue(json, ["AssetNumber"]);
         if (value != JSON_INVALID) {
-            // database status
             sayDebug("link_message("+(string)num+","+json+")");
-            prisonerNumber = value;
+            assetNumber = value;
         }
         
         prisonerLockLevel = getJSONstring(json, "prisonerLockLevel", prisonerLockLevel);

@@ -1,7 +1,7 @@
 // Responder.lsl
 // Script for Black Gazza Collar 4
 // Timberwoof Lupindo, February 2020
-// version: 2023-03-08
+// version: 2023-03-30
 
 integer responderChannel;
 integer responderListen;
@@ -80,7 +80,7 @@ string zaplevels;
 integer batteryPercent;
 string battery;
 
-list symbols = ["role", "assetNumber", "mood", "class", "crime", "threat", "lockLevel", "Battery", "batteryPercent", "ZapLevels"];
+list symbols = ["role", "AssetNumber", "Mood", "Class", "Crime", "Threat", "LockLevel", "Battery", "BatteryPercent", "ZapLevels"];
 list values;
 
 
@@ -96,14 +96,14 @@ default
     {
     // We listen in on link status messages and pick the ones we're interested in
         sayDebug("link_message json "+json);
-        assetNumber = getJSONstring(json, "assetNumber", assetNumber);
-        crime = getJSONstring(json, "crime", crime);
-        class = getJSONstring(json, "class", class);
-        threat = getJSONstring(json, "threat", threat);
-        mood = getJSONstring(json, "mood", mood);
-        lockLevel = getJSONstring(json, "lockLevel", lockLevel);
+        assetNumber = getJSONstring(json, "AssetNumber", assetNumber);
+        crime = getJSONstring(json, "Crime", crime);
+        class = getJSONstring(json, "Class", class);
+        threat = getJSONstring(json, "Threat", threat);
+        mood = getJSONstring(json, "Mood", mood);
+        lockLevel = getJSONstring(json, "LockLevel", lockLevel);
         battery = getJSONstring(json, "Battery", battery);
-        batteryPercent = getJSONinteger(json, "batteryPercent", batteryPercent);
+        batteryPercent = getJSONinteger(json, "BatteryPercent", batteryPercent);
         zaplevels = getJSONstring(json, "ZapLevels", zaplevels);
         values = [Role, assetNumber, mood, class, crime, threat, lockLevel, batteryPercent, zaplevels];
     }
@@ -112,7 +112,7 @@ default
     {
         sayDebug("listen channel:"+(string)channel+" name:"+name+" json:"+json);
         string value = getJSONstring(json, "request", "");
-        // {"request":["mood","class","lockLevel"]}
+        // {"request":["Mood","Class","LockLevel"]}
         if ((battery == "OFF") || ((batteryPercent > 4) && (value != ""))) {
             sayDebug("listen request value: "+value);
             list requests = llJson2List(value);
@@ -128,9 +128,9 @@ default
                 sayDebug(symbolkey+" -> "+value);
                 responses = responses + [symbolkey, value];
             }
-            string jsonlist = llList2Json(JSON_OBJECT, responses); // [{"mood":"OOC"},{"class":"blue"},{"lockLevel":"Off"}]
+            string jsonlist = llList2Json(JSON_OBJECT, responses); // [{"Mood":"OOC"},{"Class":"blue"},{"LockLevel":"Off"}]
             sayDebug("jsonlist:"+jsonlist);
-            string jsonresponse = llList2Json(JSON_OBJECT, ["response", jsonlist]); // {"response":[{"mood":"OOC"},{"class":"blue"},{"lockLevel":"Off"}]}
+            string jsonresponse = llList2Json(JSON_OBJECT, ["response", jsonlist]); // {"response":[{"Mood":"OOC"},{"Class":"blue"},{"LockLevel":"Off"}]}
             sayDebug("jsonresponse:"+jsonresponse);
             llWhisper(responderChannel, jsonresponse);
         } else {

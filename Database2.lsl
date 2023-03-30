@@ -109,9 +109,9 @@ sendDatabaseQuery(integer iSlot, string crimes) {
         characterSlot = iSlot;
     } else {
         sayDebug("sendDatabaseQuery unattached");
-        sendJSON("assetNumber", assetNumber(characterSlot), llGetOwner());
-        sendJSON("crime", crime(characterSlot), llGetOwner());
-        sendJSON("name", name(characterSlot), llGetOwner());
+        sendJSON("AssetNumber", assetNumber(characterSlot), llGetOwner());
+        sendJSON("Crime", crime(characterSlot), llGetOwner());
+        sendJSON("Name", name(characterSlot), llGetOwner());
     }
 }
 
@@ -226,7 +226,7 @@ default
         if (llList2Integer(isEditCrimesList, listRequestIndex))
         {
             crimeList = llListReplaceList(crimeList, [tempCrimes], characterSlot, characterSlot);
-            sendJSON("crime", crime(characterSlot), llGetOwner());
+            sendJSON("Crime", crime(characterSlot), llGetOwner());
             
             // removes unnecessary request_id from memory to save
             databaseQuery = llDeleteSubList(databaseQuery, listRequestIndex, listRequestIndex);
@@ -288,7 +288,7 @@ default
     }
     
     link_message(integer sender_num, integer num, string json, key id){
-        string request = getJSONstring(json, "database", "");
+        string request = getJSONstring(json, "Database", "");
         if (request == "getupdate") sendDatabaseQuery(characterSlot, "");
         if (request == "setcharacter") setCharacter();
         if (request == "setcrimes") setCharacterCrimes(id);
@@ -297,9 +297,9 @@ default
     listen(integer channel, string name, key id, string text) {
         if (channel == menuChannel) {
             characterSlot = llListFindList(assetNumberList, [text]);
-            sendJSON("assetNumber", assetNumber(characterSlot), llGetOwner());
-            sendJSON("crime", crime(characterSlot), llGetOwner());
-            sendJSON("name", name(characterSlot), llGetOwner());
+            sendJSON("AssetNumber", assetNumber(characterSlot), llGetOwner());
+            sendJSON("Crime", crime(characterSlot), llGetOwner());
+            sendJSON("Name", name(characterSlot), llGetOwner());
             llListenRemove(menuListen);
             menuChannel = 0;
             llSetTimerEvent(0);

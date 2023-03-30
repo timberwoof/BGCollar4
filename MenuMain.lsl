@@ -2,7 +2,7 @@
 // Menu script for Black Gazza Collar 4
 // Timberwoof Lupindo
 // June 2019
-string version = "2023-03-08";
+string version = "2023-03-30";
 
 integer OPTION_DEBUG = FALSE;
 
@@ -68,14 +68,6 @@ sayDebug(string message)
 
 sendJSON(string jsonKey, string value, key avatarKey){
     llMessageLinked(LINK_THIS, 0, llList2Json(JSON_OBJECT, [jsonKey, value]), avatarKey);
-}
-    
-sendJSONCheckbox(string jsonKey, string value, key avatarKey, integer ON) {
-    if (ON) {
-        sendJSON(jsonKey, value+"ON", avatarKey);
-    } else {
-        sendJSON(jsonKey, value+"OFF", avatarKey);
-    }
 }
     
 sendJSONinteger(string jsonKey, integer value, key avatarKey){
@@ -202,7 +194,7 @@ mainMenu(key avatarKey) {
     string message = menuMain + "\n";
 
     if (assetNumber == "P-00000") {
-        sendJSON("database", "getupdate", avatarKey);
+        sendJSON("Database", "getupdate", avatarKey);
     }
     
     if (menuAgentKey != "" & menuAgentKey != avatarKey) {
@@ -284,7 +276,7 @@ doMainMenu(key avatarKey, string message) {
         infoGive(avatarKey);
     }
     else if (message == buttonSettings){
-        sendJSON("menu", buttonSettings, avatarKey);
+        sendJSON("Menu", buttonSettings, avatarKey);
     }
     //else if (message == buttonHack){
     //    hackMenu(avatarKey);
@@ -404,7 +396,7 @@ doSetPunishmentLevels(key avatarKey, string message)
         }
         string zapJsonList = llList2Json(JSON_ARRAY, [allowZapLow, allowZapMed, allowZapHigh]);
         sendJSON("ZapLevels", zapJsonList, avatarKey);
-        sendJSONinteger("allowVision", allowVision, avatarKey);
+        //sendJSONinteger("AllowVision", allowVision, avatarKey);
     }
 }
 
@@ -421,11 +413,11 @@ default
 
         // Initialize Unworn
         if (llGetAttached() == 0) {
-            sendJSON("assetNumber", assetNumber, "");
-            sendJSON("class", "white", "");
-            sendJSON("crime", "unknown", "");
-            sendJSON("threat", "None", "");
-            sendJSON("mood", moodOOC, "");
+            sendJSON("AssetNumber", assetNumber, "");
+            sendJSON("Class", "white", "");
+            sendJSON("Crime", "unknown", "");
+            sendJSON("Threat", "None", "");
+            sendJSON("Mood", moodOOC, "");
             doSetPunishmentLevels(llGetOwner(),""); // initialize
         }
 
@@ -438,7 +430,7 @@ default
         string canonicalName = llToLower(llKey2Name(llGetOwner()));
         list canoncialList = llParseString2List(llToLower(canonicalName), [" "], []);
         string initials = llGetSubString(llList2String(canoncialList,0),0,0) + llGetSubString(llList2String(canoncialList,1),0,0);
-        menuPhrase = initials + "menu";
+        menuPhrase = initials + "Menu";
         llOwnerSay("Access the collar menu by typing /1"+menuPhrase);
         wearerListen = llListen(wearerChannel, "", "", menuPhrase);
         sayDebug("attach done");
@@ -532,22 +524,22 @@ default
     link_message(integer sender_num, integer num, string json, key avatarKey){
         // We listen in on link status messages and pick the ones we're interested in
         //sayDebug("link_message json "+json);
-        assetNumber = getJSONstring(json, "assetNumber", assetNumber);
-        crime = getJSONstring(json, "crime", crime);
-        class = getJSONstring(json, "class", class);
-        threat = getJSONstring(json, "threat", threat);
-        mood = getJSONstring(json, "mood", mood);
-        lockLevel = getJSONstring(json, "lockLevel", lockLevel);
+        assetNumber = getJSONstring(json, "AssetNumber", assetNumber);
+        crime = getJSONstring(json, "Crime", crime);
+        class = getJSONstring(json, "Class", class);
+        threat = getJSONstring(json, "Threat", threat);
+        mood = getJSONstring(json, "Mood", mood);
+        lockLevel = getJSONstring(json, "LockLevel", lockLevel);
         RelayLockState = getJSONstring(json, "RelayLockState", RelayLockState);
         renamerActive = getJSONinteger(json, "renamerActive", renamerActive);
         DisplayTokActive = getJSONinteger(json, "DisplayTokActive", DisplayTokActive);
-        batteryGraph = getJSONstring(json, "batteryGraph", batteryGraph);
+        batteryGraph = getJSONstring(json, "BatteryGraph", batteryGraph);
         rlvPresent = getJSONinteger(json, "rlvPresent", rlvPresent);
         if (!rlvPresent) {
             renamerActive = FALSE;
             DisplayTokActive = FALSE;
         }
-        if(getJSONstring(json, "menu", "") == menuMain)
+        if(getJSONstring(json, "Menu", "") == menuMain)
         {
             menuIdentifier = menuMain;
             mainMenu(avatarKey);

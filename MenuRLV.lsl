@@ -2,7 +2,7 @@
 // Menu script for Black Gazza Collar 4
 // Timberwoof Lupindo
 // June 2019
-string version = "2023-03-08";
+string version = "2023-03-30";
 
 integer OPTION_DEBUG = FALSE;
 
@@ -39,7 +39,7 @@ sayDebug(string message)
 {
     if (OPTION_DEBUG)
     {
-        llOwnerSay("Menu: "+message);
+        llOwnerSay("Menu RLV: "+message);
     }
 }
 
@@ -184,16 +184,16 @@ setRelayState(integer on) {
         integer level = llListFindList(lockLevels, [lockLevel]);
         if (level < 3) {
             sayDebug("setRelayState: "+(string)level+" "+RelayASK);
-            sendJSON("relayCommand", RelayASK, avatarKey);
+            sendJSON("RelayCommand", RelayASK, avatarKey);
         } else {
             // Heavy or hardcore
             relayCheckboxState = TRUE;
             sayDebug("setRelayState: "+(string)level+" "+RelayON);
-            sendJSON("relayCommand", RelayON, avatarKey);
+            sendJSON("RelayCommand", RelayON, avatarKey);
         }
     }  else {
         sayDebug("setRelayState: "+RelayOFF);
-        sendJSON("relayCommand", RelayOFF, avatarKey);
+        sendJSON("RelayCommand", RelayOFF, avatarKey);
     }
 }
 
@@ -282,7 +282,7 @@ doLockMenu(key avatarKey, string message, string messageButtonsTrimmed) {
         setRelayState(relayCheckboxState);
         // settingsMenu(avatarKey);
         // need to send json to call settings menu
-        sendJSON("menu", buttonSettings, avatarKey);
+        sendJSON("Menu", buttonSettings, avatarKey);
         
     // Ignore
     } else {
@@ -340,11 +340,11 @@ default
         }
         else if(message == menuMain)
         {
-            sendJSON("menu", menuMain, avatarKey);
+            sendJSON("Menu", menuMain, avatarKey);
         }
         else if(message == buttonSettings)
         {
-            sendJSON("menu", buttonSettings, avatarKey);
+            sendJSON("Menu", buttonSettings, avatarKey);
         }
 
         if (menuIdentifier == RLV) {
@@ -356,15 +356,15 @@ default
     link_message(integer sender_num, integer num, string json, key avatarKey){
         // We listen in on link status messages and pick the ones we're interested in
         //sayDebug("link_message json "+json);
-        assetNumber = getJSONstring(json, "assetNumber", assetNumber);
-        lockLevel = getJSONstring(json, "lockLevel", lockLevel);
+        assetNumber = getJSONstring(json, "AssetNumber", assetNumber);
+        lockLevel = getJSONstring(json, "LockLevel", lockLevel);
         renamerActive = getJSONinteger(json, "renamerActive", renamerActive);
         rlvPresent = getJSONinteger(json, "rlvPresent", rlvPresent);
         if (!rlvPresent) {
             renamerActive = FALSE;
         }
 
-        if(getJSONstring(json, "menu", "") == RLV)
+        if(getJSONstring(json, "Menu", "") == RLV)
         {
             menuIdentifier = RLV;
             lockMenu(avatarKey);
