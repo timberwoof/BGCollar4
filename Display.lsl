@@ -93,7 +93,7 @@ list classNames = ["white","pink","red","orange","green","blue","black"];
 list classNamesLong = ["Unassigned Transfer", "Sexual Deviant", "Mechanic", "General Population", "Medical Experiment", "Violent or Hopeless", "Mental","Unknown"];
 list classColors = [WHITE, MAGENTA, RED, ORANGE, GREEN, BLUE, GRAY];
 list classPaddingColors = [GRAY, DARK_MAGENTA, DARK_RED, DARK_ORANGE, DARK_GREEN, DARK_BLUE, DARK_GRAY];
-        
+
 string mood = "OOC";
 vector moodColor;
 
@@ -129,11 +129,11 @@ string getJSONstring(string jsonValue, string jsonKey, string valueNow){
     }
     return result;
 }
-    
+
 sendJSON(string jsonKey, string value, key avatarKey){
     llMessageLinked(LINK_THIS, 0, llList2Json(JSON_OBJECT, [jsonKey, value]), avatarKey);
 }
-    
+
 integer getLinkWithName(string name) {
     integer i = llGetLinkNumber() != 0;   // Start at zero (single prim) or 1 (two or more prims)
     integer x = llGetNumberOfPrims() + i; // [0, 1) or [1, llGetNumberOfPrims()]
@@ -275,7 +275,7 @@ displayBattery(integer percent)
     else if (percent > 37) batteryIconHoffset =  0.0; // 1/2
     else if (percent > 12) batteryIconHoffset =  0.2; // 1/4
     else batteryIconHoffset =  0.4; // empty
-    
+
     if (percent > 12) {
         batteryIconColor = <0.0, 0.5, 1.0>; // blue-cyan full, 3/4, 1/2, 1/4
         batteryLightColor = <0.0, 1.0, 0.0>;
@@ -324,7 +324,7 @@ integer uuidToInteger(key uuid)
     string last2 = llGetSubString(last,6,12);
     list lasts = [last1, last2];
     uuidparts = llListReplaceList(uuidparts, lasts, 4, 4);
-    
+
     integer sum = 0;
     integer i = 0;
     // take each uuid part
@@ -427,7 +427,7 @@ default
     {
         llSetObjectName("BG L-CON Collar V4 "+version);
         sayDebug("state_entry");
-        
+
         // LinksAlphanum
         integer i;
         for (i = 0; i < 12; i++) {
@@ -442,7 +442,7 @@ default
         batteryIconLink = getLinkWithName("powerDisplay");
         //linkTitler = getLinkWithName("powerHoseNozzle");
         //linkTitler = getLinkWithName("leashPoint");
-        
+
         llSetLinkAlpha(linkTitler, 0, ALL_SIDES);
 
         // turn off lingering battery animations
@@ -529,7 +529,7 @@ default
             batteryPercent = (integer)value;
             displayBattery(batteryPercent);
         }
-        
+
         // Prisoner Crime
         value = llJsonGetValue(json, ["Crime"]);
         if (value != JSON_INVALID) {
@@ -563,7 +563,7 @@ default
             sayDebug("Display "+value);
             displayCentered(value);
         }
-        
+
         // temporarily display a message
         value = llJsonGetValue(json, ["DisplayTemp"]);
         if (value != JSON_INVALID) {
@@ -573,7 +573,7 @@ default
             TIMER_REDISPLAY = 1;
             llSetTimerEvent(3);
         }
-        
+
         // blink battery light for bad words
         value = llJsonGetValue(json, ["badWordCount"]);
         if (value != JSON_INVALID) {
@@ -593,7 +593,7 @@ default
             displayTitler();
         }
     }
-    
+
    timer() {
         sayDebug("timer()");
         if (TIMER_REDISPLAY > 0) {
@@ -605,7 +605,7 @@ default
             llSetTimerEvent(0);
             TIMER_REDISPLAY = 0;
         }
-        
+
         // Blink the battery light off and red for every bad word spokem.
         // Timer shoud be on one-second interval
         if (TIMER_BADWORDS > 0) {

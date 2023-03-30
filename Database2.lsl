@@ -128,7 +128,7 @@ displayCentered(string message) {
 sendJSON(string jsonKey, string value, key avatarKey){
     llMessageLinked(LINK_THIS, 0, llList2Json(JSON_OBJECT, [jsonKey, value]), avatarKey);
     }
-    
+
 string getJSONstring(string jsonValue, string jsonKey, string valueNow){
     string result = valueNow;
     string value = llJsonGetValue(jsonValue, [jsonKey]);
@@ -150,10 +150,10 @@ setUpMenu(key avatarKey, string message, list buttons)
 // buttons - list of button texts
 {
     sayDebug("setUpMenu");
-    
+
     buttons = buttons + ["Main"];
     buttons = buttons + ["Close"];
-    
+
     sendJSON("DisplayTemp", "menu access", avatarKey);
     string completeMessage = assetNumber(characterSlot) + " Collar: " + message;
     menuChannel = -(llFloor(llFrand(10000)+1000));
@@ -184,7 +184,7 @@ setCharacterCrimes(key avatarKey)
     llSetTimerEvent(30);
     llTextBox(avatarKey, message, crimeSetChannel);
 }
-    
+
 default
 {
     state_entry() // reset
@@ -193,7 +193,7 @@ default
         sendDatabaseQuery(1, "");
         sayDebug("state_entry done");
     }
-    
+
     attach(key avatar)
     {
         sayDebug("attach");
@@ -206,7 +206,7 @@ default
     {
         integer listRequestIndex = llListFindList(databaseQuery, [request_id]);
         if (listRequestIndex == -1) return; // skip response if this script no required it
-        
+
         // if response status code not equal 200(OK)
         // then remove item with request_id from list and exit
         if (status != 200)
@@ -215,7 +215,7 @@ default
 
             // removes unnecessary request_id from memory to save
             databaseQuery = llDeleteSubList(databaseQuery, listRequestIndex, listRequestIndex);
-            
+
             // also removes unnecessary crimes record from memory to save
             isEditCrimesList = llDeleteSubList(isEditCrimesList, listRequestIndex, listRequestIndex);
             return;
@@ -227,7 +227,7 @@ default
         {
             crimeList = llListReplaceList(crimeList, [tempCrimes], characterSlot, characterSlot);
             sendJSON("Crime", crime(characterSlot), llGetOwner());
-            
+
             // removes unnecessary request_id from memory to save
             databaseQuery = llDeleteSubList(databaseQuery, listRequestIndex, listRequestIndex);
             isEditCrimesList = llDeleteSubList(isEditCrimesList, listRequestIndex, listRequestIndex);
@@ -242,7 +242,7 @@ default
         string assetNumber = "P-00000";
         string theCrime = "Unregistered";
         string theName = llGetOwner();
-        
+
         // decode the response which looks like
         // Timberwoof Lupindo,0,Piracy; Illegal Transport of Biogenics,284ba63f-378b-4be6-84d9-10db6ae48b8d,P-60361
         integer whereTwoCommas = llSubStringIndex(message, ",,");
@@ -254,46 +254,46 @@ default
             message = llInsertString( message, whereTwoCommas, ",Unrecorded," );
         }
         sayDebug("http_response message="+message);
-        
+
         list returnedStuff = llParseString2List(message, [","], []);
         theName = llList2String(returnedStuff, 0);
         string mysteriousNumber = llList2String(returnedStuff, 1);
         theCrime = llList2String(returnedStuff, 2);
         string avatarKey = llList2String(returnedStuff, 3);
         string theAssetNumber = llList2String(returnedStuff, 4);
-        
+
         sayDebug("name:"+theName);
         sayDebug("number:"+mysteriousNumber);
         sayDebug("crime:"+theCrime);
         sayDebug("key:"+avatarKey);
         sayDebug("assetNumber:"+theAssetNumber);
-        
+
         assetNumberList = llListReplaceList(assetNumberList, [theAssetNumber], characterSlot, characterSlot);
         crimeList = llListReplaceList(crimeList, [theCrime], characterSlot, characterSlot);
         nameList = llListReplaceList(nameList, [theName], characterSlot, characterSlot);
         sentenceList = llListReplaceList(sentenceList, [mysteriousNumber], characterSlot, characterSlot);
-        
+
         if (characterSlot < 6) {
             characterSlot = characterSlot + 1;
             sendDatabaseQuery(characterSlot, "");
         } else {
             characterSlot = 1;
-            
+
             sayDebug("htpresponse assetNumberList: "+(string)assetNumberList);
             sayDebug("htpresponse crimeList: "+(string)crimeList);
             sayDebug("htpresponse nameList: "+(string)nameList);
-            
+
             characterMenu();
         }
     }
-    
+
     link_message(integer sender_num, integer num, string json, key id){
         string request = getJSONstring(json, "Database", "");
         if (request == "getupdate") sendDatabaseQuery(characterSlot, "");
         if (request == "setcharacter") setCharacter();
         if (request == "setcrimes") setCharacterCrimes(id);
     }
-    
+
     listen(integer channel, string name, key id, string text) {
         if (channel == menuChannel) {
             characterSlot = llListFindList(assetNumberList, [text]);
@@ -313,7 +313,7 @@ default
                 sendDatabaseQuery(characterSlot, text);
         }
     }
-    
+
     timer() {
         if (menuListen != 0) {
             llListenRemove(menuListen);

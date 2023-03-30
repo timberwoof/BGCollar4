@@ -3,9 +3,9 @@
 // Timberwoof Lupindo, June 2019
 // version: 2023-03-30
 
-// Receives events from other sytsems and discgarhes the battery accordingly. 
-// Receives recharge message from the charger and charges the battery accordingly. 
-// Sends battery state commands to Display. 
+// Receives events from other sytsems and discgarhes the battery accordingly.
+// Receives recharge message from the charger and charges the battery accordingly.
+// Sends battery state commands to Display.
 
 integer OPTION_DEBUG = FALSE;
 
@@ -14,7 +14,7 @@ integer batteryCharge; // seconds left
 integer batteryPercent;
 list rlvStates; // names of rlv states
 list dischargeRates;  // battery seconds per second
-integer dischargeRate; 
+integer dischargeRate;
 string theRLVstate;
 integer timerInterval;
 
@@ -42,7 +42,7 @@ sendJSON(string jsonKey, string value, key avatarKey){
 sendJSONinteger(string jsonKey, integer value, key avatarKey){
     llMessageLinked(LINK_THIS, 0, llList2Json(JSON_OBJECT, [jsonKey, (string)value]), avatarKey);
 }
-    
+
 string getJSONstring(string jsonValue, string jsonKey, string valueNow){
     string result = valueNow;
     string value = llJsonGetValue(jsonValue, [jsonKey]);
@@ -51,7 +51,7 @@ string getJSONstring(string jsonValue, string jsonKey, string valueNow){
     }
     return result;
 }
-        
+
 integer getJSONinteger(string jsonValue, string jsonKey, integer valueNow){
     integer result = valueNow;
     string value = llJsonGetValue(jsonValue, [jsonKey]);
@@ -73,22 +73,22 @@ integer updateValue(string json, string jsonKey, integer now, integer replace) {
 dischargeBattery(string why, integer seconds)
 {
     batteryCharge = batteryCharge - seconds;
-    
+
     // limit battery charge to basic charge
     if (batteryCharge > basicCharge) {
-        batteryCharge = basicCharge; 
+        batteryCharge = basicCharge;
     }
-    
+
     // limit battery discharge to 0;
     // automatically rehcarge if battery is off
     if (batteryCharge <= 0) {
         if (batteryActive == "ON") {
             batteryCharge = 0;
         } else {
-            batteryCharge = basicCharge;           
+            batteryCharge = basicCharge;
         }
     }
-    
+
     // broadcast the new battery level 0-100%
     integer newbatteryPercent = (integer)llFloor(batteryCharge * 100.0 / basicCharge);
     if (newbatteryPercent != batteryPercent) {
@@ -138,7 +138,7 @@ default
 
     link_message(integer sender_num, integer num, string json, key id){
         sayDebug("link_message (" + json + ")");
-        
+
         // Message from Responder for charging
         string value = llJsonGetValue(json, ["CHARGE"]); // range 0.0 to 1.0
         if (value != JSON_INVALID) {
@@ -147,7 +147,7 @@ default
             sayDebug("link_message new batteryCharge:" + (string)batteryCharge + "; returning");
             return;
         }
-        
+
         // message from Menu to update Battery setting
         value = llJsonGetValue(json, ["Battery"]);
         if (value != JSON_INVALID) {
@@ -155,8 +155,8 @@ default
             sayDebug("link_message new batteryActive:" + batteryActive + "; returning");
             return;
         }
-                
-        // One-time discharges for events. 
+
+        // One-time discharges for events.
         // When something gets set, discharge the battery a little.
         integer chargeUsed = FALSE;
         chargeUsed = updateValue(json, "Mood", chargeUsed, 600);
@@ -194,10 +194,10 @@ default
         if (lockLevel == "Off") {
             renamerActive = FALSE;
             badWordsActive = FALSE;
-            gagActive = FALSE; 
+            gagActive = FALSE;
             DisplayTokActive = FALSE;
         }
-        
+
         // Current discharge rate depending on things that are on.
         integer newDischargeRate = 0;
         // theRLVstate results in numbers 0,1,2,3,4
@@ -206,7 +206,7 @@ default
         newDischargeRate = newDischargeRate + badWordsActive;
         newDischargeRate = newDischargeRate + gagActive;
         newDischargeRate = newDischargeRate + DisplayTokActive;
-        
+
         // if we adjusted the discharge rate, then update it and do a battery discharge
         if (newDischargeRate != dischargeRate) {
             sayDebug("link_message dischargeRate:"+(string)dischargeRate);
