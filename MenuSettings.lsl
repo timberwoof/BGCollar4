@@ -2,9 +2,9 @@
 // Menu script for Black Gazza Collar 4
 // Timberwoof Lupindo
 // June 2019
-string version = "2023-03-08";
+string version = "2023-03-30";
 
-integer OPTION_DEBUG = TRUE;
+integer OPTION_DEBUG = FALSE;
 
 integer menuChannel = 0;
 integer menuListen = 0;
@@ -55,6 +55,7 @@ string buttonSettings = "Settings";
 string buttonTitler = "Titler";
 string buttonBattery = "Battery";
 string buttonCharacter = "Character";
+string buttonSetCrime = "Set Crime";
 //string buttonHack = "Hack";
 
 key guardGroupKey = "b3947eb2-4151-bd6d-8c63-da967677bc69";
@@ -65,7 +66,7 @@ sayDebug(string message)
 {
     if (OPTION_DEBUG)
     {
-        llOwnerSay("Menu: "+message);
+        llOwnerSay("Menu Settings: "+message);
     }
 }
 
@@ -140,7 +141,7 @@ setUpMenu(string identifier, key avatarKey, string message, list buttons)
     sendJSON("DisplayTemp", "menu access", avatarKey);
     menuIdentifier = identifier;
     menuAgentKey = avatarKey; // remember who clicked
-    string completeMessage = assetNumber + " Collar: " + message;
+    string completeMessage = assetNumber + message;
     menuChannel = -(llFloor(llFrand(10000)+1000));
     menuListen = llListen(menuChannel, "", avatarKey, "");
     llSetTimerEvent(30);
@@ -314,8 +315,15 @@ settingsMenu(key avatarKey) {
     buttons = buttons + menuButtonActive(buttonSpeech, setSpeech);
     buttons = buttons + menuButtonActive(menuCheckbox(buttonTitler, titlerActive), setTitle);
     buttons = buttons + menuButtonActive(menuCheckbox(buttonBattery, batteryActive), setBattery);
-    buttons = buttons + menuButtonActive(buttonCharacter, setCharacter);
     
+    if(avatarKey == llGetOwner()) {
+        // replace Character button to SetCrimes for guards
+        buttons = buttons + menuButtonActive(buttonCharacter, setCharacter);
+    } else {
+         // it's available for only guards group in IC mood collar
+        buttons += menuButtonActive(buttonSetCrime, setCrimes);
+    }
+
     setUpMenu(buttonSettings, avatarKey, message, buttons);
 }
 doSettingsMenu(key avatarKey, string message, string messageButtonsTrimmed) {
@@ -326,7 +334,7 @@ doSettingsMenu(key avatarKey, string message, string messageButtonsTrimmed) {
     }
     else if (message == RLV){
         if (rlvPresent) {
-            sendJSON("menu", RLV, avatarKey);
+            sendJSON("Menu", RLV, avatarKey);
         } else {
             // get RLV to check RLV again
             llOwnerSay("RLV was off nor not detected. Attempting to register with RLV.");
@@ -364,7 +372,10 @@ doSettingsMenu(key avatarKey, string message, string messageButtonsTrimmed) {
     else if (message == buttonCharacter){
         characterMenu(avatarKey);
     }
-            
+    else if(message == buttonSetCrime) {
+        characterSetCrimeTextBox(avatarKey);
+    }
+
 }
 
 PunishmentLevelMenu(key avatarKey)
@@ -406,12 +417,12 @@ doSetPunishmentLevels(key avatarKey, string message)
         }
         // If the wearer turns them all off, then high gets set.
         if (!(allowZapLow || allowZapMed || allowZapHigh)){
-             allowZapHigh = TRUE;
+            allowZapHigh = TRUE;
         }
         string zapJsonList = llList2Json(JSON_ARRAY, [allowZapLow, allowZapMed, allowZapHigh]);
         sayDebug("doSetPunishmentLevels zapJsonList after: "+(string)[allowZapLow, allowZapMed, allowZapHigh]);
         sendJSON("ZapLevels", zapJsonList, avatarKey);
-        //sendJSONinteger("allowVision", allowVision, avatarKey);
+        //sendJSONinteger("AllowVision", allowVision, avatarKey);
     }
 }
 
@@ -561,7 +572,11 @@ doSpeechMenu(key avatarKey, string message, string messageButtonsTrimmed)
 
 characterMenu(key avatarKey) {
     // tell database to give the character menu and choose the character stuff.
-    sendJSON("database", "setcharacter", avatarKey);
+    sendJSON("Database", "setcharacter", avatarKey);
+}
+
+characterSetCrimeTextBox(key avatarKey) {
+    sendJSON("Database","setcrimes",avatarKey); // tell database to give the character set Crime TextBox and guard can to change the crime.
 }
 
 PenaltyMenu(key avatarKey) {
@@ -635,7 +650,7 @@ default
 
         if(message == menuMain)
         {
-            sendJSON("menu", menuMain, avatarKey);
+            sendJSON("Menu", menuMain, avatarKey);
         }
         else if(message == buttonSettings)
         {
@@ -660,14 +675,14 @@ default
         else if (menuIdentifier == "Class") {
             sayDebug("listen: Class:"+messageButtonsTrimmed);
             class = messageButtonsTrimmed;
-            sendJSON("class", class, avatarKey);
+            sendJSON("Class", class, avatarKey);
             settingsMenu(avatarKey);
         }
         // Mood
         else if (menuIdentifier == "Mood") {
             sayDebug("listen: Mood:"+messageButtonsTrimmed);
             mood = messageButtonsTrimmed;
-            sendJSON("mood", mood, avatarKey);
+            sendJSON("Mood", mood, avatarKey);
             settingsMenu(avatarKey);
         }
         // Set Zap Level
@@ -684,7 +699,7 @@ default
         else if (menuIdentifier == "Threat") {
             sayDebug("listen: threat:"+messageButtonsTrimmed);
             threat = messageButtonsTrimmed;
-            sendJSON("threat", threat, avatarKey);
+            sendJSON("Threat", threat, avatarKey);
             settingsMenu(avatarKey);
         }
         else {
@@ -695,12 +710,12 @@ default
     link_message(integer sender_num, integer num, string json, key avatarKey){
         // We listen in on link status messages and pick the ones we're interested in
         //sayDebug("link_message json "+json);
-        assetNumber = getJSONstring(json, "assetNumber", assetNumber);
-        crime = getJSONstring(json, "crime", crime);
-        class = getJSONstring(json, "class", class);
-        threat = getJSONstring(json, "threat", threat);
-        mood = getJSONstring(json, "mood", mood);
-        lockLevel = getJSONstring(json, "lockLevel", lockLevel);
+        assetNumber = getJSONstring(json, "AssetNumber", assetNumber);
+        crime = getJSONstring(json, "Crime", crime);
+        class = getJSONstring(json, "Class", class);
+        threat = getJSONstring(json, "Threat", threat);
+        mood = getJSONstring(json, "Mood", mood);
+        lockLevel = getJSONstring(json, "LockLevel", lockLevel);
         renamerActive = getJSONinteger(json, "renamerActive", renamerActive);
         badWordsActive = getJSONinteger(json, "badWordsActive", badWordsActive);
         DisplayTokActive = getJSONinteger(json, "DisplayTokActive", DisplayTokActive);
@@ -714,7 +729,7 @@ default
             batteryActive = TRUE;
         }
 
-        if(getJSONstring(json, "menu", "") == buttonSettings)
+        if(getJSONstring(json, "Menu", "") == buttonSettings)
         {
             menuIdentifier = buttonSettings;
             settingsMenu(avatarKey);

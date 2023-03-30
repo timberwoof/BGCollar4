@@ -1,19 +1,79 @@
 Bill of Materials for Black Gazza Collar 4
 
+Notecards
+=========
 READ ME
-Battery
-Database
-Display
-Keypad
-Leash
-MenuMain
-MenuRLV
-MenuSettings
-Relay
-MenuSettings
-Relay
-Responder
-RLV
-Speech
-Zap
+(name formatted like <<BG "L-CON" Collar V4 2023-03-08 READ ME>>
+
+LSL Scripts
+===========
+Battery.lsl
+Database2.lsl
+Display.lsl
+Keypad.lsl
+Leash.lsl
+MenuMain.lsl
+MenuRLV.lsl
+MenuSettings.lsl
+Relay.lsl
+MenuSettings.lsl
+Relay.lsl
+Responder.lsl
+RLV.lsl
+Speech.lsl
+
+Animations
+==========
+Stand From Faint
+zap1
+zap2
+zap3_fall
 ZapRecover
+
+Additional Animations for Stocks
+binder4a
+
+
+How to Prepare BOM for L-CON Collar
+========================================
+From the changes in GitHub, add to the READ ME file.
+Verify that the code in your development collar is the same as what's in GitHub.
+Make a folder in your Inventory named somethiing like 2023-03-30 BOM.
+From the development collar with all the final scripts, copy them into that folder.
+Update the collar's READ ME to the one from Github.
+Copy the READ ME into the BOM folder.
+Copy the animations into thr BOM folder.
+Make sure the scripts all have copy/no-mod/no-transfer permissions.
+
+How to Prepare Distributable Collar
+===================================
+Rez a full-perm collar.
+Drop all the goodies into it.
+Reset the scripts.
+Set the scripts running.
+Verify that it works:
+The title should be
+<<<
+P-00000 / Class white: Unassigned Transfer / Crime: / Threadt: none / Mood: OOC
+Click the collar and select Info.
+It should report "<you>'s 'BG L-CON {Collar|Stocks} V 2023-03-28'
+Collar: Prisoner Information
+Number:
+Crime:
+Class: white: Unassigned Transfer
+Threat:None
+Punishment: shcol [*] Low [*] Medium [*] High
+Pattery Level: <mostly black boxes>
+
+OOC Information:
+Version: 2023-03-30
+Mood: OOC
+RLV Relay: Off
+RLV not detected
+
+Choose a Notecard:
+1 - BG "L-CON"Collar V4"
+
+(Doc 1) (Main) (Close)
+>>>
+
