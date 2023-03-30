@@ -10,6 +10,23 @@ string version = "2023-03-28";
 // • battery display
 // • floaty text
 
+// This script requires some prims to have specific names:
+// PilotLight
+// blinky1
+// blinky2
+// blinky3
+// blinky4
+// DisplayFrame
+// powerDisplay
+// hardware
+// powerHoseNozzle
+// leashpoint right
+// leashpoint left
+// leashpoint out left
+// padlock1
+// padlock2
+// padlock3
+
 integer OPTION_DEBUG = FALSE;
 
 // **** general use colors
@@ -34,11 +51,11 @@ vector DARK_CYAN = <0.0, 0.5, 0.5>;
 vector CYAN = <0.0, 1.0, 1.0>;
 vector PURPLE = <0.7, 0.1, 1.0>;
 
-vector LIGHT_RED = <.87, 0.12, 0.12>;
+vector LIGHT_RED = <1.0, 0.45, 0.45>;
 vector LIGHT_ORANGE = <1, 0.66, 0.2>;
 vector LIGHT_GREEN = <0.32, 1, 0.32>;
 vector LIGHT_BLUE = <0.0, 0.75, 1.0>;
-vector LIGHT_MAGENTA = <1, .2, .66>;
+vector LIGHT_MAGENTA = <1, 0, 1>;
 vector LIGHT_CYAN = <0.0, 1.0, 1.0>;
 
 // **** links and faces
@@ -60,8 +77,11 @@ integer LinkAlphanumFrame = -1;
 integer FaceAlphanumFrame = 0;
 integer FaceAlphanum = 1;
 list LinksAlphanum = [];
-
+integer linkHardware = -1;
 integer linkTitler = 0;
+integer linkPadlock1 = -1;
+integer linkPadlock2 = -1;
+integer linkPadlock3 = -1;
 float titlerActive = 1.0;
 string buttonTitler = "Titler";
 
@@ -97,7 +117,7 @@ list classNames = ["white","pink","red","orange","green","blue","black"];
 list classNamesLong = ["Unassigned Transfer", "Sexual Deviant", "Mechanic", "General Population", "Medical Experiment", "Violent or Hopeless", "Mental","Unknown"];
 list classColors = [WHITE, MAGENTA, RED, ORANGE, GREEN, LIGHT_BLUE, GRAY];
 list classPaddingColors = [GRAY, DARK_MAGENTA, DARK_RED, DARK_ORANGE, DARK_GREEN, DARK_BLUE, DARK_GRAY];
-        
+
 string mood = "OOC";
 vector moodColor;
 
@@ -116,6 +136,7 @@ integer TIMER_SCROLL = 0;
 integer TIMER_REDISPLAY = 0;
 
 key avatar = NULL_KEY;
+integer permies = 0;
 
 sayDebug(string message)
 {
@@ -133,11 +154,11 @@ string getJSONstring(string jsonValue, string jsonKey, string valueNow){
     }
     return result;
 }
-    
+
 sendJSON(string jsonKey, string value, key avatarKey){
     llMessageLinked(LINK_THIS, 0, llList2Json(JSON_OBJECT, [jsonKey, value]), avatarKey);
 }
-    
+
 integer getLinkWithName(string name) {
     integer i = llGetLinkNumber() != 0;   // Start at zero (single prim) or 1 (two or more prims)
     integer x = llGetNumberOfPrims() + i; // [0, 1) or [1, llGetNumberOfPrims()]
@@ -279,7 +300,7 @@ displayBattery(integer percent)
     else if (percent > 37) batteryIconHoffset =  0.0; // 1/2
     else if (percent > 12) batteryIconHoffset =  0.2; // 1/4
     else batteryIconHoffset =  0.4; // empty
-    
+
     if (percent > 12) {
         batteryIconColor = <0.0, 0.5, 1.0>; // blue-cyan full, 3/4, 1/2, 1/4
         batteryLightColor = <0.0, 1.0, 0.0>;
@@ -305,13 +326,10 @@ displayBattery(integer percent)
         brightnessMultiplier = 0.0;
     }
     sayDebug("displayBattery("+(string)percent+") brightnessMultiplier:" + (string)brightnessMultiplier);
-    //llSetLinkColor(LinkBlinky, batteryLightColor, batteryIconFace);
-    //llSetLinkPrimitiveParamsFast(LinkBlinky,[PRIM_COLOR, batteryIconFace, batteryLightColor*brightnessMultiplier, 1.0]);
-    //llSetLinkPrimitiveParamsFast(LinkBlinky, [PRIM_GLOW, ALL_SIDES, batteryLightGlow]);
-    //llSetLinkPrimitiveParamsFast(LinkBlinky, [PRIM_GLOW, FaceAlphanumFrame, 0.3]);
+    llSetLinkPrimitiveParamsFast(LinkAlphanumFrame, [PRIM_COLOR, FaceAlphanumFrame, classColor*brightnessMultiplier, 1.0]);
+    llSetLinkPrimitiveParamsFast(LinkAlphanumFrame, [PRIM_GLOW, FaceAlphanumFrame, 0.3]);
     llSetLinkPrimitiveParamsFast(batteryIconLink,[PRIM_TEXTURE, batteryIconFace, batteryIconID, <0.2, 0.75, 0.0>, <batteryIconHoffset, 0.0, 0.0>, 1.5708]);
     llSetLinkPrimitiveParamsFast(batteryIconLink,[PRIM_COLOR, batteryIconFace, batteryIconColor*brightnessMultiplier, 1.0]);
-    //llSetLinkPrimitiveParamsFast(LinkBlinky,[PRIM_COLOR, FaceBlinkyMood, moodColor*brightnessMultiplier, 1.0]);
     setTextColor(moodColor*brightnessMultiplier);
     setclass(class);
 }
@@ -328,7 +346,7 @@ integer uuidToInteger(key uuid)
     string last2 = llGetSubString(last,6,12);
     list lasts = [last1, last2];
     uuidparts = llListReplaceList(uuidparts, lasts, 4, 4);
-    
+
     integer sum = 0;
     integer i = 0;
     // take each uuid part
@@ -368,14 +386,18 @@ setclass(string class) {
     classColor = llList2Vector(classColors, classi);
     classLong = llList2String(classNamesLong, classi);
     setTextColor(classColor);
-    
+
     // set the blinky color
     llSetLinkPrimitiveParamsFast(LinkBlinkyClass,[PRIM_COLOR, FaceBlinkyClass, classColor, 1.0]);
-    
-    // set the collar frame color
-    //list classFrameColors = [WHITE, LIGHT_MAGENTA, LIGHT_RED, LIGHT_ORANGE, LIGHT_GREEN, LIGHT_BLUE, DARK_GRAY];
-    //vector frameClassColor = llList2Vector(classFrameColors, classi);
-    //llSetLinkPrimitiveParamsFast(LinkFrame,[PRIM_COLOR, FaceFrame, frameClassColor, 1.0]);
+
+    // set the light frame around the alphanum text area
+    llSetLinkPrimitiveParamsFast(LinkAlphanumFrame, [PRIM_COLOR, FaceAlphanumFrame, classColor*brightnessMultiplier, 1.0]);
+    llSetLinkPrimitiveParamsFast(LinkAlphanumFrame, [PRIM_GLOW, FaceAlphanumFrame, 0.3]);
+
+    // set the stocks hardware color
+    list classFrameColors = [WHITE, LIGHT_MAGENTA, LIGHT_RED, LIGHT_ORANGE, LIGHT_GREEN, LIGHT_BLUE, DARK_GRAY];
+    vector frameClassColor = llList2Vector(classFrameColors, classi);
+    llSetLinkPrimitiveParamsFast(linkHardware,[PRIM_COLOR, FaceFrame, frameClassColor, 1.0]);
     displayTitler();
     }
 
@@ -383,11 +405,13 @@ setclass(string class) {
 attachStartup(key theAvatar) {
     sayDebug("attachStartup");
     // stock sets animation for arms up
-    llRequestPermissions(theAvatar, PERMISSION_TRIGGER_ANIMATION);
     avatar = theAvatar;
-    mood = blinkyColorToMeaning(FaceBlinkyMood, moodColors, moodNames, "Mood");
-    class = blinkyColorToMeaning(FaceBlinkyClass, classColors, classNames, "Class");
-    threat = llList2String(threatLevels,3); // default is extreme. Otehrwise, why the stocks? 
+    if (avatar != NULL_KEY) {
+        llRequestPermissions(avatar, PERMISSION_TRIGGER_ANIMATION);
+    }
+    mood = blinkyColorToMeaning(FaceBlinkyMood, moodColors, moodNames, "mood");
+    class = blinkyColorToMeaning(FaceBlinkyClass, classColors, classNames, "class");
+    threat = llList2String(threatLevels,3); // default is extreme. Otehrwise, why the stocks?
 }
 
 default
@@ -396,7 +420,7 @@ default
     {
         llSetObjectName("BG L-CON Stocks V4 "+version);
         sayDebug("state_entry");
-        
+
         // LinksAlphanum
         integer i;
         for (i = 0; i < 12; i++) {
@@ -413,9 +437,13 @@ default
         LinkBlinkyThreat = getLinkWithName("blinky4");
         LinkAlphanumFrame = getLinkWithName("DisplayFrame");
         batteryIconLink = getLinkWithName("powerDisplay");
+        linkHardware = getLinkWithName("hardware");
         //linkTitler = getLinkWithName("powerHoseNozzle");
         //linkTitler = getLinkWithName("leashPoint");
-        
+        linkPadlock1 = getLinkWithName("padlock1");
+        linkPadlock2 = getLinkWithName("padlock2");
+        linkPadlock3 = getLinkWithName("padlock3");
+
         llSetLinkAlpha(linkTitler, 0, ALL_SIDES);
 
         // turn off lingering battery animations
@@ -457,29 +485,42 @@ default
     run_time_permissions(integer perm)
     {
         sayDebug("run_time_permissions("+(string)perm+")");
-        if (perm & PERMISSION_TRIGGER_ANIMATION)
+        permies = perm;
+        if (permies & PERMISSION_TRIGGER_ANIMATION)
         {
             llStartAnimation("binder4a");
             llSetTimerEvent(5);
         }
     }
 
-    link_message( integer sender_num, integer num, string json, key id ){ 
+    link_message( integer sender_num, integer num, string json, key id ){
         sayDebug("link_message "+json);
 
         // IC/OOC Mood sets frame color, text color, and Blinky1
-        string value = llJsonGetValue(json, ["Mood"]);
+        string value = llJsonGetValue(json, ["mood"]);
         if (value != JSON_INVALID) {
             mood = value;
             integer moodi = llListFindList(moodNames, [mood]);
             vector moodColor = llList2Vector(moodColors, moodi);
             llSetLinkPrimitiveParamsFast(LinkAlphanumFrame,[PRIM_COLOR, FaceAlphanumFrame, moodColor, 1.0]);
             llSetLinkPrimitiveParamsFast(LinkAlphanumFrame, [PRIM_GLOW, FaceAlphanumFrame, 0.3]);
+
+            if (mood == "OOC" || mood == "DnD") {
+                sayDebug("link_message mood = OOC || DnD");
+                llSetLinkPrimitiveParamsFast(linkPadlock1, [PRIM_COLOR, ALL_SIDES, <1,1,1>, 0.0]);
+                llSetLinkPrimitiveParamsFast(linkPadlock2, [PRIM_COLOR, ALL_SIDES, <1,1,1>, 0.0]);
+                llSetLinkPrimitiveParamsFast(linkPadlock3, [PRIM_COLOR, ALL_SIDES, <1,1,1>, 0.0]);
+            } else {
+                sayDebug("link_message mood other");
+                llSetLinkPrimitiveParamsFast(linkPadlock1, [PRIM_COLOR, ALL_SIDES, <1,1,1>, 1.0]);
+                llSetLinkPrimitiveParamsFast(linkPadlock2, [PRIM_COLOR, ALL_SIDES, <1,1,1>, 1.0]);
+                llSetLinkPrimitiveParamsFast(linkPadlock3, [PRIM_COLOR, ALL_SIDES, <1,1,1>, 1.0]);
+            }
             displayTitler();
         }
 
         // Prisoner Class sets text color and blinky 3
-        value = llJsonGetValue(json, ["Class"]);
+        value = llJsonGetValue(json, ["class"]);
         if (value != JSON_INVALID) {
             class = value;
             setclass(class);
@@ -487,7 +528,7 @@ default
         }
 
         // Lock level sets blinky 2
-        value = llJsonGetValue(json, ["LockLevel"]);
+        value = llJsonGetValue(json, ["lockLevel"]);
         if (value != JSON_INVALID) {
             list lockLevels = ["Safeword", "Off", "Light", "Medium", "Heavy", "Hardcore"];
             list lockColors = [GREEN, BLACK, GREEN, YELLOW, ORANGE, RED];
@@ -500,7 +541,7 @@ default
         }
 
         // Threat level sets blinky 4
-        value = llJsonGetValue(json, ["Threat"]);
+        value = llJsonGetValue(json, ["threat"]);
         if (value != JSON_INVALID) {
             threat = value;
             integer threati = llListFindList(threatLevels, [threat]);
@@ -509,23 +550,23 @@ default
             llSetLinkPrimitiveParamsFast(LinkBlinkyThreat,[PRIM_COLOR, FaceBlinkyThreat, threatcolor, 1.0]);
             displayTitler();
         }
-        
+
         // Battery Level Report
-        value = llJsonGetValue(json, ["BatteryPercent"]);
+        value = llJsonGetValue(json, ["batteryPercent"]);
         if (value != JSON_INVALID) {
             batteryPercent = (integer)value;
             displayBattery(batteryPercent);
         }
 
         // Prisoner Crime
-        value = llJsonGetValue(json, ["Crime"]);
+        value = llJsonGetValue(json, ["crime"]);
         if (value != JSON_INVALID) {
             crime = value;
             displayTitler();
         }
 
         // Prisoner Asset Number
-        value = llJsonGetValue(json, ["AssetNumber"]);
+        value = llJsonGetValue(json, ["assetNumber"]);
         if (value != JSON_INVALID) {
             assetNumber = value;
             string firstName = "Unassigned";
@@ -550,7 +591,7 @@ default
             sayDebug("Display "+value);
             displayCentered(value);
         }
-        
+
         // temporarily display a message
         value = llJsonGetValue(json, ["DisplayTemp"]);
         if (value != JSON_INVALID) {
@@ -560,7 +601,7 @@ default
             TIMER_REDISPLAY = 1;
             llSetTimerEvent(3);
         }
-        
+
         // blink battery light for bad words
         value = llJsonGetValue(json, ["badWordCount"]);
         if (value != JSON_INVALID) {
@@ -580,18 +621,18 @@ default
             displayTitler();
         }
     }
-    
+
     timer() {
         if (TIMER_REDISPLAY > 0) {
             if (assetNumber == unassignedAsset) {
-                sendJSON("Database", "getupdate", llGetOwner());
+                sendJSON("database", "getupdate", llGetOwner());
             }
             sayDebug("set and display assetNumber \""+assetNumber+"\"");
             displayCentered(assetNumber);
             llSetTimerEvent(0);
             TIMER_REDISPLAY = 0;
         }
-        
+
         // Blink the battery light off and red for every bad word spokem.
         // Timer shoud be on one-second interval
         if (TIMER_BADWORDS > 0) {
@@ -609,10 +650,11 @@ default
                 llSetTimerEvent(0);
             }
         }
-        
+
         // Start or continue the animation.
-        else {
+        else if (permies & PERMISSION_TRIGGER_ANIMATION)
+        {
             llStartAnimation("binder4a");
-            }
         }
     }
+}

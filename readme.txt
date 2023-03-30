@@ -38,7 +38,41 @@ https://library.panocul.us/mw/index.php/Second_Life_Black_Gazza_Collar#Instructi
 
 New in this Version 
 =============
-New in this version ((2023-03-08)
+New in this Version (2023-03-30)
+• Collar allows a Guard to setthe crime listed for the active asset number. To set a crime:
+Inmate: Settings: Set mood to OOC. Choose the character. Set mood to IC.
+Guard: Settings: Set Crime.
+• Script Display-stocks has been updated for the Black Gazza Stocks. If you have BG Stocks, get the box with the update scripts. Replace all the scripts with the ones in the box.
+Script Display-stocks refers to links by name. IF the names of objects in your collar or stocks are not correct, the script will not work right.
+// PilotLight
+// blinky1
+// blinky2
+// blinky3
+// blinky4
+// DisplayFrame
+// powerDisplay
+// hardware
+// powerHoseNozzle
+// leashpoint right
+// leashpoint left
+// leashpoint out left
+// padlock1
+// padlock2
+// padlock3
+Not having these named properly will not break the collar. It will just not look quite right. Timberwoof Lupindo will provide detailed instructions on how to verify that the names are correct.
+• Script Display refers to links by name. IF the names of objects in your collar or stocks are not correct, the script will not work right.
+// Titler
+// BG_CollarV4_LightsMesh
+// powerDisplay
+// powerHoseNozzle
+// leashPoint
+It is not likely that your collr doesn't have these link names.
+• Support for Lockmeister cuffs. Please test and report bugs.
+• Authoriation is based on actual group membership, not just not-Inmate-group membership. This means that Guards must have their Black Gazza Guards group active to inflict guard functions on you.
+• Zap level preferences are corrected.
+• New animation sequence for Zap. You will need some animations for your Stocks. These are included in the Stocks update box.
+
+New in this version (2023-03-08)
 The menu script has been split into three, making it less likely to crap out from a stack-heap collision. 
 The Number pad script has been cleaned up to eliminate the "too many listens" error. 
 

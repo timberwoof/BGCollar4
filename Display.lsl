@@ -10,6 +10,13 @@ string version = "2023-03-30";
 // • battery display
 // • floaty text
 
+// This script requires some prims to have specific names:
+// Titler
+// BG_CollarV4_LightsMesh
+// powerDisplay
+// powerHoseNozzle
+// leashPoint
+
 integer OPTION_DEBUG = FALSE;
 
 // **** general use colors

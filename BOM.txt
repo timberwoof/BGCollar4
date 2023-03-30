@@ -1,6 +1,12 @@
 Bill of Materials for Black Gazza Collar 4
 
+Notecards
+=========
 READ ME
+(name formatted like <<BG "L-CON" Collar V4 2023-03-08 READ ME>>
+
+LSL Scripts
+===========
 Battery.lsl
 Database2.lsl
 Display.lsl
@@ -15,5 +21,11 @@ Relay.lsl
 Responder.lsl
 RLV.lsl
 Speech.lsl
-Zap.lsl
-ZapRecover.lsl
+
+Animations
+==========
+Stand From Faint
+zap1
+zap2
+zap3_fall
+ZapRecover
