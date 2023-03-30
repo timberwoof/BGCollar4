@@ -24,6 +24,8 @@ string action;
 list leashPoints;
 integer leashRingPrim;
 
+integer lockMeisterCH = -8888;
+integer waitingLMResponse = FALSE;
 key guardGroupKey = "b3947eb2-4151-bd6d-8c63-da967677bc69";
 
 sayDebug(string message)
@@ -268,6 +270,7 @@ default
         leasherAvatar = llGetOwner();
         leashParticlesOff();
         sensorState = "";
+        llListen(lockMeisterCH, "", NULL_KEY, "");
         sayDebug("state_entry done");
     }
     
@@ -319,6 +322,28 @@ default
     
     
     listen( integer channel, string name, key avatarKey, string message ){
+        if(channel == lockMeisterCH)
+        {
+            if(llGetSubString(message, 0, 35) != (string)leashTarget) return;
+            string responseLM = llGetSubString(message, 36, -1);
+            if(responseLM == "handle ok")
+            {
+                leashParticlesOn("listen Grab Leash", avatarKey);
+                waitingLMResponse = FALSE;
+            }
+            else if(responseLM == "handle detached")
+            {
+                llSensorRemove();
+                llStopMoveToTarget();
+                leashParticlesOff();
+                leasherAvatar = llGetOwner();
+                leashTarget = "";
+                sensorState = "";
+            }
+
+            return; // skip another code if its lockMeister callback
+        }
+
         sayDebug("listen("+message+")  action:"+action);
         llListenRemove(menuListen);
         menuListen = 0;
@@ -339,6 +364,8 @@ default
             // sensor must keep track of the agent who grabbed the leash
             sayDebug("grab leash");
             leashTarget = avatarKey;
+            waitingLMResponse = TRUE;
+            llRegionSayTo(leashTarget, lockMeisterCH, (string)leashTarget + "handle");
             leashParticlesOn("listen Grab Leash", leashTarget);
             llSensorRepeat("", leashTarget, AGENT, 96, PI, 1);
             sensorState = "LeashAgent";
@@ -429,6 +456,13 @@ default
 
     timer()
     {
+        if(waitingLMResponse)
+        {
+            llSetTimerEvent(29);
+            waitingLMResponse = FALSE;
+            leashParticlesOn("listen Grab Leash", leashTarget);
+            return;
+        }
         llListenRemove(menuListen);
         menuListen = 0;
     }
