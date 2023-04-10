@@ -2,7 +2,7 @@
 // Menu script for Black Gazza Collar 4
 // Timberwoof Lupindo
 // June 2019
-string version = "2023-03-30";
+string version = "2023-04-09";
 
 integer OPTION_DEBUG = FALSE;
 
@@ -12,6 +12,7 @@ string menuIdentifier;
 key menuAgentKey;
 
 string RLV = "RLV";
+string buttonBlank = " ";
 string lockLevel;
 list lockLevels = ["Off", "Light", "Medium", "Heavy", "Hardcore"];
 string lockLevelOff = "Off";
@@ -26,12 +27,12 @@ string assetNumber = "P-00000";
 
 string menuMain = "Main";
 
-string buttonBlank = " ";
 string buttonInfo = "Info";
 string buttonSettings = "Settings";
 string buttonSpeech = "Speech";
 
 key guardGroupKey = "b3947eb2-4151-bd6d-8c63-da967677bc69";
+key blurp = "d5567c52-b78d-f78f-bcb1-605701b3af24";
 
 // Utilities *******
 
@@ -39,14 +40,14 @@ sayDebug(string message)
 {
     if (OPTION_DEBUG)
     {
-        llOwnerSay("Menu RLV: "+message);
+        llOwnerSay("MenuRLV: "+message);
     }
 }
 
 sendJSON(string jsonKey, string value, key avatarKey){
     llMessageLinked(LINK_THIS, 0, llList2Json(JSON_OBJECT, [jsonKey, value]), avatarKey);
 }
-    
+
 sendJSONCheckbox(string jsonKey, string value, key avatarKey, integer ON) {
     if (ON) {
         sendJSON(jsonKey, value+"ON", avatarKey);
@@ -54,11 +55,11 @@ sendJSONCheckbox(string jsonKey, string value, key avatarKey, integer ON) {
         sendJSON(jsonKey, value+"OFF", avatarKey);
     }
 }
-    
+
 sendJSONinteger(string jsonKey, integer value, key avatarKey){
     llMessageLinked(LINK_THIS, 0, llList2Json(JSON_OBJECT, [jsonKey, (string)value]), avatarKey);
 }
-    
+
 string getJSONstring(string jsonValue, string jsonKey, string valueNow){
     string result = valueNow;
     string value = llJsonGetValue(jsonValue, [jsonKey]);
@@ -67,7 +68,7 @@ string getJSONstring(string jsonValue, string jsonKey, string valueNow){
     }
     return result;
 }
-    
+
 integer getJSONinteger(string jsonValue, string jsonKey, integer valueNow){
     integer result = valueNow;
     string value = llJsonGetValue(jsonValue, [jsonKey]);
@@ -105,16 +106,16 @@ setUpMenu(string identifier, key avatarKey, string message, list buttons)
 // buttons - list of button texts
 {
     sayDebug("setUpMenu "+identifier);
-    
+
     if (identifier != menuMain) {
         buttons = buttons + [menuMain];
     }
     buttons = buttons + ["Close"];
-    
+
     sendJSON("DisplayTemp", "menu access", avatarKey);
     menuIdentifier = identifier;
     menuAgentKey = avatarKey; // remember who clicked
-    string completeMessage = assetNumber + message;
+    string completeMessage = assetNumber + " " + message;
     menuChannel = -(llFloor(llFrand(10000)+1000));
     menuListen = llListen(menuChannel, "", avatarKey, "");
     llSetTimerEvent(30);
@@ -183,15 +184,18 @@ setRelayState(integer on) {
     if (on) {
         integer level = llListFindList(lockLevels, [lockLevel]);
         if (level < 3) {
+            sendJSON("DisplayTemp", "Relay ASK", avatarKey);
             sayDebug("setRelayState: "+(string)level+" "+RelayASK);
             sendJSON("RelayCommand", RelayASK, avatarKey);
         } else {
             // Heavy or hardcore
+            sendJSON("DisplayTemp", "Relay ON", avatarKey);
             relayCheckboxState = TRUE;
             sayDebug("setRelayState: "+(string)level+" "+RelayON);
             sendJSON("RelayCommand", RelayON, avatarKey);
         }
     }  else {
+        sendJSON("DisplayTemp", "Relay OFF", avatarKey);
         sayDebug("setRelayState: "+RelayOFF);
         sendJSON("RelayCommand", RelayOFF, avatarKey);
     }
@@ -207,7 +211,7 @@ lockMenu(key avatarKey)
             "• Light and Medium can be switched Off any time.\n" +
             "• Heavy requires you to acitvely Safeword out.\n" +
             "• Hardcore has no safeword. To be released, you must ask a Guard.";
-            
+
         // lockLevels: 0=Off 1=Light 2=Medium 3=Heavy 4=Hardcore
         // convert our locklevel to an integer
         sayDebug("lockMenu lockLevel:"+lockLevel);
@@ -223,7 +227,7 @@ lockMenu(key avatarKey)
         list lockLists = lockListOff + lockListLight + lockListMedium + lockListHeavy + lockListHardcore; // strided list
         list lockListMenu = llList2List(lockLists, iLockLevel*5, (iLockLevel+1)*5); // list of lock levels to add to menu
         sayDebug("lockMenu lockListMenu:"+(string)lockListMenu);
-                
+
         //make the button list
         list buttons = [];
         integer levelIndex;
@@ -234,13 +238,15 @@ lockMenu(key avatarKey)
             buttons = buttons + menuButtonActive(radioButton, buttonActive);
             // It may seem stupid to have ([•] something) but in this case choosing it again is stupider.
         }
+        buttons = buttons + buttonBlank;
 
         // Relay button
         buttons = buttons + menuButtonActive(menuCheckbox("Relay", relayCheckboxState), iLockLevel < 3);
+        buttons = buttons + buttonBlank + buttonBlank;
 
         // Settings button
         buttons = buttons + [buttonSettings];
-        
+
         setUpMenu(RLV, avatarKey, message, buttons);
     }
 }
@@ -256,7 +262,7 @@ doLockMenu(key avatarKey, string message, string messageButtonsTrimmed) {
         sendJSON(RLV, "Hardcore", avatarKey);
         relayCheckboxState = TRUE;
         setRelayState(relayCheckboxState);
-        
+
     // Relay
     } else if (message == menuCheckbox("Relay", relayCheckboxState)) {
         // RelayState() now returns what the state is now,
@@ -268,7 +274,7 @@ doLockMenu(key avatarKey, string message, string messageButtonsTrimmed) {
         }
         sayDebug("listen set relayCheckboxState:"+(string)relayCheckboxState);
         setRelayState(relayCheckboxState);
-        
+
     // Locklevels
     } else if (llListFindList(lockLevels, [messageButtonsTrimmed]) > -1) {
         sayDebug("listen set lockLevel:\""+lockLevel+"\"");
@@ -283,10 +289,12 @@ doLockMenu(key avatarKey, string message, string messageButtonsTrimmed) {
         // settingsMenu(avatarKey);
         // need to send json to call settings menu
         sendJSON("Menu", buttonSettings, avatarKey);
-        
+
     // Ignore
     } else {
         sayDebug("doLockMenu ignoring "+message);
+        llPlaySound(blurp, 1.0);
+        llSleep(0.2);
     }
 }
 
@@ -320,7 +328,7 @@ default
             }
         }
         sayDebug("listen messageButtonsTrimmed:"+messageButtonsTrimmed+" menuIdentifier: "+menuIdentifier);
-        
+
         // display the menu item
         if (llGetSubString(message,1,1) == " ") {
             sendJSON("DisplayTemp", messageButtonsTrimmed, avatarKey);

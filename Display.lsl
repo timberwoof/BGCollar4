@@ -2,7 +2,7 @@
 // Display script for Black Gazza Collar 4
 // Timberwoof Lupindo
 // June 2019
-string version = "2023-03-30";
+string version = "2023-04-09";
 
 // This script handles all display elements of Black Gazza Collar 4.
 // • alphanumeric display
@@ -78,7 +78,7 @@ float batteryLightGlow = 0.1;
 string scrollText;
 integer scrollPos;
 integer scrollLimit;
-string fontID = "fc55ee0b-62b5-667c-043d-46d822249ee0";
+string fontID = "1d63261b-f8fe-0f4f-fbac-5e31487b4ba3";
 
 // *** Collar State
 // only lists that are needed in a lot of places are kept here.
@@ -209,7 +209,7 @@ displayText(string text){
         "ZabcdUVWXY" + // 4 U-Za-d
         "jklmnefghi" + // 5 e-n
         "tuvwxopqrs" + // 6 o-x
-        ":;-#*yz .," + // 7 yz...
+        ":;-[]yz .," + // 7 yz...
         "5678901234" + // 1 0-9
         "FGHIJABCDE" + // 2 A-J
         "PQRSTKLMNO" ; // 3 K-T

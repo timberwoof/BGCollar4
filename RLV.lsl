@@ -20,6 +20,8 @@ float ZapTimeCharge = 1.5;
 float ZapTimeLow = 2;
 float ZapTimeMed = 4;
 float ZapTimeHigh = 8;
+integer ZapByObject = 1;
+integer zapListen = 0;
 
 integer batteryCharge = 0;
 
@@ -511,7 +513,7 @@ default
         llPreloadSound(soundZapLoop);
         if (llGetAttached() != 0){
             checkRLV("state_entry");
-            llListen(ZapChannel, "", "", "");
+            zapListen = llListen(ZapChannel, "", "", "");
             llListen(ACSInterferenceChannel, "", "", "");
         }
         sayDebug("state_entry done");
@@ -579,6 +581,14 @@ default
 
             if (llSubStringIndex(RLVCommand, "Status") > -1) {
                 sendJSON("rlvPresent", "1", "");
+            }
+
+            if (llSubStringIndex(RLVCommand, "ZapByObject") > -1) {
+                if (RLVCommand == "ZapByObjectON") {
+                    zapListen = llListen(ZapChannel, "", "", "");
+                } else {
+                    llListenRemove(zapListen);
+                }
             }
 
         // timer sent set or reset

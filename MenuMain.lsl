@@ -2,7 +2,7 @@
 // Menu script for Black Gazza Collar 4
 // Timberwoof Lupindo
 // June 2019
-string version = "2023-03-30";
+string version = "2023-04-09";
 
 integer OPTION_DEBUG = FALSE;
 
@@ -55,6 +55,7 @@ string buttonSafeword = "Safeword";
 string buttonRelease = "Release";
 
 key guardGroupKey = "b3947eb2-4151-bd6d-8c63-da967677bc69";
+key blurp = "d5567c52-b78d-f78f-bcb1-605701b3af24";
 
 // Utilities *******
 
@@ -62,18 +63,18 @@ sayDebug(string message)
 {
     if (OPTION_DEBUG)
     {
-        llOwnerSay("Menu: "+message);
+        llOwnerSay("MenuMain: "+message);
     }
 }
 
 sendJSON(string jsonKey, string value, key avatarKey){
     llMessageLinked(LINK_THIS, 0, llList2Json(JSON_OBJECT, [jsonKey, value]), avatarKey);
 }
-    
+
 sendJSONinteger(string jsonKey, integer value, key avatarKey){
     llMessageLinked(LINK_THIS, 0, llList2Json(JSON_OBJECT, [jsonKey, (string)value]), avatarKey);
 }
-    
+
 string getJSONstring(string jsonValue, string jsonKey, string valueNow){
     string result = valueNow;
     string value = llJsonGetValue(jsonValue, [jsonKey]);
@@ -82,7 +83,7 @@ string getJSONstring(string jsonValue, string jsonKey, string valueNow){
     }
     return result;
 }
-    
+
 integer getJSONinteger(string jsonValue, string jsonKey, integer valueNow){
     integer result = valueNow;
     string value = llJsonGetValue(jsonValue, [jsonKey]);
@@ -120,16 +121,16 @@ setUpMenu(string identifier, key avatarKey, string message, list buttons)
 // buttons - list of button texts
 {
     sayDebug("setUpMenu "+identifier);
-    
+
     if (identifier != menuMain) {
         buttons = buttons + [menuMain];
     }
     buttons = buttons + ["Close"];
-    
+
     sendJSON("DisplayTemp", "menu access", avatarKey);
     menuIdentifier = identifier;
     menuAgentKey = avatarKey; // remember who clicked
-    string completeMessage = assetNumber + message;
+    string completeMessage = assetNumber + " " + message;
     menuChannel = -(llFloor(llFrand(10000)+1000));
     menuListen = llListen(menuChannel, "", avatarKey, "");
     llSetTimerEvent(30);
@@ -196,20 +197,20 @@ mainMenu(key avatarKey) {
     if (assetNumber == "P-00000") {
         sendJSON("Database", "getupdate", avatarKey);
     }
-    
+
     if (menuAgentKey != "" & menuAgentKey != avatarKey) {
         llInstantMessage(avatarKey, "The collar menu is being accessed by someone else.");
         sayDebug("Told " + llKey2Name(avatarKey) + "that the collar menu is being accessed by someone else.");
         return;
     }
-    
+
     // assume some things are not available
     integer doPunish = FALSE;
     integer doForceSit = FALSE;
     integer doLeash = FALSE;
     integer doSafeword = FALSE;
     integer doRelease = FALSE;
-    
+
     // Collar functions controlled by Mood: punish, force sit, leash, speech
     if (mood == moodDND | mood == moodLockup) {
         if (avatarKey == llGetOwner()) {
@@ -236,27 +237,27 @@ mainMenu(key avatarKey) {
             doLeash = TRUE;
         }
     }
-    
+
     // Collar functions overridden by lack of RLV
     if (!rlvPresent) {
         doForceSit = FALSE;
         doLeash = FALSE;
         message = message + "\nSome functions are available ony when RLV is present.";
     }
-    
+
     // Collar functions controlled by locklevel: Safeword and Release
     if (lockLevel == "Hardcore" && agentIsGuard(avatarKey)) {
         doRelease = TRUE;
     } else {
         message = message + "\nRelease command is available to a Guard when prisoner is in RLV Hardcore mode.";
     }
-    
+
     if (avatarKey == llGetOwner() && lockLevel != "Hardcore" && lockLevel != lockLevelOff) {
         doSafeword = TRUE;
     } else {
         message = message + "\nSafeword is availavle to the Prisoner in RLV levels Medium and Heavy.";
     }
-    
+
     list buttons = [];
     buttons = buttons + menuButtonActive(buttonSafeword, doSafeword);
     buttons = buttons + menuButtonActive(buttonRelease, doRelease);
@@ -266,7 +267,7 @@ mainMenu(key avatarKey) {
     buttons = buttons + menuButtonActive(buttonForceSit, doForceSit);
     buttons = buttons + buttonSettings;
     buttons = buttons + buttonInfo;
-    
+
     setUpMenu(menuMain, avatarKey, message, buttons);
 }
 
@@ -295,6 +296,9 @@ doMainMenu(key avatarKey, string message) {
     }
     else if (message == buttonRelease){
         sendJSON(RLV, lockLevelOff, avatarKey);
+    } else {
+        llPlaySound(blurp, 1.0);
+        llSleep(0.2);
     }
 }
 
@@ -348,7 +352,7 @@ infoGive(key avatarKey){
     } else {
         message = message + "RLV not detected.\n";
     }
-    
+
     if (OPTION_DEBUG) {
         message = message + "Used Memory: " + (string)llGetUsedMemory() + ".\n";
     }
@@ -449,7 +453,7 @@ default
     listen( integer channel, string name, key avatarKey, string message )
     {
         sayDebug("listen name:"+name+" message:"+message);
-        
+
         // listen for the /1flmenu command
         if (channel == wearerChannel & message == menuPhrase) {
             sayDebug("listen menuAgentKey:'"+(string)menuAgentKey+"'");
@@ -461,7 +465,7 @@ default
             }
             return;
         }
-        
+
         string messageButtonsTrimmed = message;
         list striplist = ["☒ ","☐ ","● ","○ "];
         integer i;
@@ -474,7 +478,7 @@ default
             }
         }
         sayDebug("listen messageButtonsTrimmed:"+messageButtonsTrimmed+" menuIdentifier: "+menuIdentifier);
-        
+
         // display the menu item
         if (llGetSubString(message,1,1) == " ") {
             sendJSON("DisplayTemp", messageButtonsTrimmed, avatarKey);
@@ -518,6 +522,8 @@ default
         }
         else {
             sayDebug("ERROR: did not process menuIdentifier "+menuIdentifier);
+            llPlaySound(blurp, 0.2);
+            llSleep(1);
         }
     }
 
