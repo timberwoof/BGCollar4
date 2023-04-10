@@ -104,6 +104,8 @@ integer scrollPos;
 integer scrollLimit;
 string fontID = "fc55ee0b-62b5-667c-043d-46d822249ee0";
 
+string binderAnimation = "binder4b";
+
 // *** Collar State
 // only lists that are needed in a lot of places are kept here.
 // Other lists are dedined only where they are needed, in an effort to save space.
@@ -488,7 +490,7 @@ default
         permies = perm;
         if (permies & PERMISSION_TRIGGER_ANIMATION)
         {
-            llStartAnimation("binder4a");
+            llStartAnimation(binderAnimation);
             llSetTimerEvent(5);
         }
     }
@@ -654,7 +656,7 @@ default
         // Start or continue the animation.
         else if (permies & PERMISSION_TRIGGER_ANIMATION)
         {
-            llStartAnimation("binder4a");
+            llStartAnimation(binderAnimation);
         }
     }
 }
