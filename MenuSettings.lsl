@@ -21,6 +21,10 @@ integer allowVision = TRUE;
 string mood;
 string class = "white";
 list classes = ["white", "pink", "red", "orange", "green", "blue", "black"];
+integer canBeNone = 1;
+integer canBeModerate = 1;
+integer canBeDangerous = 1;
+integer canBeExtreme = 1;
 
 string RLV = "RLV";
 string lockLevel;
@@ -165,7 +169,7 @@ string menuCheckbox(string title, integer onOff)
     return checkbox + " " + title;
 }
 
-list menuRadioButton(string title, string match)
+string menuRadioButton(string title, string match)
 // make radio button menu item out of a button and the state text
 {
     string radiobutton;
@@ -177,7 +181,7 @@ list menuRadioButton(string title, string match)
     {
         radiobutton = "○";
     }
-    return [radiobutton + " " + title];
+    return radiobutton + " " + title;
 }
 
 list menuButtonActive(string title, integer onOff)
@@ -443,6 +447,7 @@ doSetPunishmentLevels(key avatarKey, string message)
 
 classMenu(key avatarKey)
 {
+    fixThreatAndClass();
     sayDebug("classMenu");
     string message = "Set your Prisoner Class";
     list buttons = [];
@@ -479,14 +484,50 @@ moodMenu(key avatarKey)
     }
 }
 
+fixThreatAndClass() {
+    // Threat and Class are related.
+    // Each class has threat levels that its members can be.
+    // White : None Moderate
+    // Pink: None Moderate
+    // Red: None Moderate
+    // Green: None Moderate Dangerous
+    // Orange: None Moderate Dangerous
+    // Blue: Moderate Dangerous Extreme
+    // Black: Dangerous Extreme
+
+    // First we set up integers that say whether each threat level is allowed for the class.
+    canBeNone = class != "blue" & class != "black";
+    canBeModerate = class != "black";
+    canBeDangerous = class != "white" & class != "pink" & class != "red";
+    canBeExtreme = class == "blue" | class == "black";
+
+    // Then we check the threat.
+    // Can't be none or Moderate becomes Dangerous.
+    // Can't be Dangerous or Extreme becomes Moderate.
+    if (threat == "None" & !canBeNone) {
+        threat = "Dangerous";
+    }
+    if (threat == "Moderate" & !canBeModerate) {
+        threat = "Dangerous";
+    }
+    if (threat == "Dangerous" & !canBeDangerous) {
+        threat = "Moderate";
+    }
+    if (threat == "Extreme" & !canBeExtreme) {
+        threat = "Moderate";
+    }
+}
+
 threatMenu(key avatarKey) {
+    fixThreatAndClass();
     string message = "Threat";
     list buttons = [];
-    buttons = buttons + menuRadioButton("None", threat);
-    buttons = buttons + menuRadioButton("Moderate", threat);
+    // Each button is made active or inactive based on the class.
+    buttons = buttons + menuButtonActive(menuRadioButton("None", threat), canBeNone);
+    buttons = buttons + menuButtonActive(menuRadioButton("Moderate", threat), canBeModerate);
     buttons = buttons + buttonBlank;
-    buttons = buttons + menuRadioButton("Dangerous", threat);
-    buttons = buttons + menuRadioButton("Extreme", threat);
+    buttons = buttons + menuButtonActive(menuRadioButton("Dangerous", threat), canBeDangerous);
+    buttons = buttons + menuButtonActive(menuRadioButton("Extreme", threat), canBeExtreme);
     buttons = buttons + buttonBlank;
     buttons = buttons + buttonSettings;
     setUpMenu("Threat", avatarKey, message, buttons);

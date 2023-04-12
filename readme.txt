@@ -38,6 +38,17 @@ https://library.panocul.us/mw/index.php/Second_Life_Black_Gazza_Collar#Instructi
 
 New in this Version 
 =============
+New in This Version (Development)
+• when you select a menu item in brackets, the collar makes a burp sound
+• display character set has brackets
+• RLV menus have added blank buttons for better gouping of functions
+• Commands to change relay mode show up in alphanumeric display
+• Settings Punishments allows you to turn off zaps by objects
+• Where possible, added Settings, Main, Close commands to menus.
+• Threat levels that can be set depend on the prisoner class. The order of increasing danger is
+    white, pink, red, green, orange, blue, black.
+
+
 New in this Version (2023-03-30)
 • Collar allows a Guard to setthe crime listed for the active asset number. To set a crime:
 Inmate: Settings: Set mood to OOC. Choose the character. Set mood to IC.
