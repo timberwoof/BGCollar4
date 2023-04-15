@@ -1,4 +1,4 @@
-BG "L-CON" Collar V4 2021-12-23 READ ME
+BG L-CON V4 2023-04-15 READ ME
 
 Introduction
 ========
@@ -36,21 +36,25 @@ https://library.panocul.us/mw/index.php/Second_Life_Black_Gazza_Collar#Instructi
 
 
 
-New in this Version 
-=============
+New in this Version  (2024-04-15)
+======================
 New in This Version (Development)
-• when you select a menu item in brackets, the collar makes a burp sound
-• display character set has brackets
-• RLV menus have added blank buttons for better gouping of functions
-• Commands to change relay mode show up in alphanumeric display
-• Settings Punishments allows you to turn off zaps by objects
-• Where possible, added Settings, Main, Close commands to menus.
-• Threat levels that can be set depend on the prisoner class. The order of increasing danger is
+• When you select a menu item in brackets, the collar makes a burp sound.
+• Display character set has brackets for disallowed options.
+• RLV menus have added blank buttons for better gouping of functions.
+• Commands to change relay mode show up in alphanumeric display.
+• Settings Punishments allows you to turn off zaps by objects.
+• Added Settings, Main, Close commands to menus.
+• Threat levels that can be set depending on the prisoner class. The order of increasing danger is
     white, pink, red, green, orange, blue, black.
+• Collar no longer asks for character every time you log in. If you have multiple characters,
+    keep one copy of the collar for each outfit. Each copy should remember its asset number.
+• Fixed bugs in permissions for leash and speech.
+• Support for L-CON Implant.
 
 
 New in this Version (2023-03-30)
-• Collar allows a Guard to setthe crime listed for the active asset number. To set a crime:
+• Collar allows a Guard to set the crime listed for the active asset number. To set a crime:
 Inmate: Settings: Set mood to OOC. Choose the character. Set mood to IC.
 Guard: Settings: Set Crime.
 • Script Display-stocks has been updated for the Black Gazza Stocks. If you have BG Stocks, get the box with the update scripts. Replace all the scripts with the ones in the box.
@@ -77,7 +81,7 @@ Not having these named properly will not break the collar. It will just not look
 // powerDisplay
 // powerHoseNozzle
 // leashPoint
-It is not likely that your collr doesn't have these link names.
+It is not likely that your collar doesn't have these link names.
 • Support for Lockmeister cuffs. Please test and report bugs.
 • Authoriation is based on actual group membership, not just not-Inmate-group membership. This means that Guards must have their Black Gazza Guards group active to inflict guard functions on you.
 • Zap level preferences are corrected.

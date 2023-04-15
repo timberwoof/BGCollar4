@@ -2,7 +2,7 @@
 // Menu script for Black Gazza Collar 4
 // Timberwoof Lupindo
 // June 2019
-string version = "2023-04-09";
+string version = "2023-04-15";
 
 integer OPTION_DEBUG = FALSE;
 

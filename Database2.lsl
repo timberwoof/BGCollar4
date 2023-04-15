@@ -5,7 +5,7 @@
 // Database.lsl
 // All interactions with the external database
 // Timberwoof Lupindo
-// version: 2023-04-09
+// version: 2023-04-15
 
 integer OPTION_DEBUG = FALSE;
 list databaseQuery;
@@ -20,7 +20,7 @@ string URL_BASE = "http://sl.blackgazza.com/";
 string URL_READ = "read_inmate.cgi?key=";
 string URL_ADD = "add_inmate.cgi?key=";
 key crimeRequest;
-integer characterSlot = 1;
+integer characterSlot = 0; // unselected
 
 integer menuChannel;
 integer menuListen;
@@ -57,16 +57,16 @@ integer agentIsGuard(key agent)
     return FALSE;
 }
 
-string assetNumber(integer iSlot) {
-    return llList2String(assetNumberList, iSlot);
+string assetNumber() {
+    return llList2String(assetNumberList, characterSlot);
 }
 
-string crime(integer iSlot) {
-    return llList2String(crimeList, iSlot);
+string crime() {
+    return llList2String(crimeList, characterSlot);
 }
 
-string name(integer iSlot) {
-    return llList2String(nameList, iSlot);
+string name() {
+    return llList2String(nameList, characterSlot);
 }
 
 // convert agent key to database key
@@ -83,12 +83,12 @@ string AgentKeyWithRole(string agentKey, integer slot) {
 }
 
 // fire off a request to the crime database for this wearer.
-// Reads global iSlot to determine which character to get.
+// Parameter iSlot determines which character to get.
 sendDatabaseQuery(integer iSlot, string crimes) {
     if (llGetAttached()) {
         displayCentered("Accessing DB");
         string URL = URL_BASE;
-        if (crimes != "" && assetNumber(characterSlot) != "" && assetNumber(characterSlot) != "P-00000") {
+        if (crimes != "" && assetNumber() != "" && assetNumber() != "P-00000") {
             URL += URL_ADD;
             isEditCrimesList += [TRUE];
         } else {
@@ -96,27 +96,22 @@ sendDatabaseQuery(integer iSlot, string crimes) {
             isEditCrimesList += [FALSE];
         }
         URL += AgentKeyWithRole((string)llGetOwner(),iSlot);
-        if (crimes != "" && assetNumber(characterSlot) != "" && assetNumber(characterSlot) != "P-00000") {
+        if (crimes != "" && assetNumber() != "" && assetNumber() != "P-00000") {
             URL += "&sentence=" + llList2String(sentenceList, characterSlot);
-            URL += "&name=" + name(characterSlot);
+            URL += "&name=" + name();
             URL += "&crime=" + crimes;
             tempCrimes = crimes;
         }
 
-        sayDebug("sendDatabaseQuery:"+URL);
+        sayDebug("sendDatabaseQuery URL:"+URL);
         databaseQuery += [llHTTPRequest(URL,[],"")]; // append reqest_id for use it later in responder event
         characterSlot = iSlot;
     } else {
         sayDebug("sendDatabaseQuery unattached");
-        sendJSON("AssetNumber", assetNumber(characterSlot), llGetOwner());
-        sendJSON("Crime", crime(characterSlot), llGetOwner());
-        sendJSON("Name", name(characterSlot), llGetOwner());
+        sendJSON("AssetNumber", assetNumber(), llGetOwner());
+        sendJSON("Crime", crime(), llGetOwner());
+        sendJSON("Name", name(), llGetOwner());
     }
-}
-
-setCharacter() {
-    sayDebug("setCharacter");
-    sendDatabaseQuery(1,"");
 }
 
 displayCentered(string message) {
@@ -154,7 +149,7 @@ setUpMenu(key avatarKey, string message, list buttons)
     buttons = buttons + ["Close"];
 
     sendJSON("DisplayTemp", "menu access", avatarKey);
-    string completeMessage = assetNumber(characterSlot) + " Collar: " + message;
+    string completeMessage = assetNumber() + " Collar: " + message;
     menuChannel = -(llFloor(llFrand(10000)+1000));
     menuListen = llListen(menuChannel, "", avatarKey, "");
     llSetTimerEvent(30);
@@ -177,7 +172,7 @@ characterMenu() {
 setCharacterCrimes(key avatarKey)
 {
     if (avatarKey == llGetOwner() || !agentIsGuard(avatarKey)) return;
-    string message = assetNumber(characterSlot) + "\nCurrent Crimes: " + crime(characterSlot) + "\nPlease set new Crimes: ";
+    string message = assetNumber() + "\nCurrent Crimes: " + crime() + "\nPlease set new Crimes: ";
     crimeSetChannel = -(llFloor(llFrand(1000)+1000));
     crimeSetListen = llListen(crimeSetChannel, "", avatarKey, "");
     llSetTimerEvent(30);
@@ -189,14 +184,22 @@ default
     state_entry() // reset
     {
         sayDebug("state_entry");
-        sendDatabaseQuery(1, "");
+        if (characterSlot == 0) {
+            sendDatabaseQuery(1, "");
+        } else {
+            sendJSON("AssetNumber", assetNumber(), llGetOwner());
+        }
         sayDebug("state_entry done");
     }
 
     attach(key avatar)
     {
         sayDebug("attach");
-        sendDatabaseQuery(1, "");
+        if (characterSlot == 0) {
+            sendDatabaseQuery(1, "");
+        } else {
+            sendJSON("AssetNumber", assetNumber(), llGetOwner());
+        }
         sayDebug("attach done");
     }
 
@@ -225,7 +228,7 @@ default
         if (llList2Integer(isEditCrimesList, listRequestIndex))
         {
             crimeList = llListReplaceList(crimeList, [tempCrimes], characterSlot, characterSlot);
-            sendJSON("Crime", crime(characterSlot), llGetOwner());
+            sendJSON("Crime", crime(), llGetOwner());
 
             // removes unnecessary request_id from memory to save
             databaseQuery = llDeleteSubList(databaseQuery, listRequestIndex, listRequestIndex);
@@ -276,7 +279,7 @@ default
             characterSlot = characterSlot + 1;
             sendDatabaseQuery(characterSlot, "");
         } else {
-            characterSlot = 1;
+            characterSlot = 0; // unselected
 
             sayDebug("htpresponse assetNumberList: "+(string)assetNumberList);
             sayDebug("htpresponse crimeList: "+(string)crimeList);
@@ -288,27 +291,30 @@ default
 
     link_message(integer sender_num, integer num, string json, key id){
         string request = getJSONstring(json, "Database", "");
+        if (request != "") sayDebug("link_message("+json+")");
         if (request == "getupdate") sendDatabaseQuery(characterSlot, "");
-        if (request == "setcharacter") setCharacter();
+        if (request == "setcharacter") sendDatabaseQuery(1,"");
         if (request == "setcrimes") setCharacterCrimes(id);
     }
 
     listen(integer channel, string name, key id, string text) {
         if (channel == menuChannel) {
-            characterSlot = llListFindList(assetNumberList, [text]);
-            sendJSON("AssetNumber", assetNumber(characterSlot), llGetOwner());
-            sendJSON("Crime", crime(characterSlot), llGetOwner());
-            sendJSON("Name", name(characterSlot), llGetOwner());
+            sayDebug("listen(menuchannel, "+text+")");
+            characterSlot = llListFindList(assetNumberList, [text]); // selected
+            sendJSON("AssetNumber", assetNumber(), llGetOwner());
+            sendJSON("Crime", crime(), llGetOwner());
+            sendJSON("Name", name(), llGetOwner());
             llListenRemove(menuListen);
             menuChannel = 0;
             llSetTimerEvent(0);
         }
         else if (channel == crimeSetChannel)
         {
+            sayDebug("listen(crimeSetChannel, "+text+")");
             llListenRemove(crimeSetListen);
             crimeSetChannel = 0;
             llSetTimerEvent(0);
-            if (assetNumber(characterSlot) != "" && assetNumber(characterSlot) != "P-00000" && id != llGetOwner() && agentIsGuard(id))
+            if ( (assetNumber() != "") && (assetNumber() != "P-00000") && (id != llGetOwner()) && (agentIsGuard(id)))
                 sendDatabaseQuery(characterSlot, text);
         }
     }

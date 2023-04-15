@@ -2,7 +2,7 @@
 // Menu script for Black Gazza Collar 4
 // Timberwoof Lupindo
 // June 2019
-string version = "2023-04-09";
+string version = "2023-04-15";
 
 integer OPTION_DEBUG = FALSE;
 
@@ -498,7 +498,7 @@ fixThreatAndClass() {
     // First we set up integers that say whether each threat level is allowed for the class.
     canBeNone = class != "blue" & class != "black";
     canBeModerate = class != "black";
-    canBeDangerous = class != "white" & class != "pink" & class != "red";
+    canBeDangerous = class != "white" & class != "pink";
     canBeExtreme = class == "blue" | class == "black";
 
     // Then we check the threat.
@@ -523,12 +523,26 @@ threatMenu(key avatarKey) {
     string message = "Threat";
     list buttons = [];
     // Each button is made active or inactive based on the class.
-    buttons = buttons + menuButtonActive(menuRadioButton("None", threat), canBeNone);
-    buttons = buttons + menuButtonActive(menuRadioButton("Moderate", threat), canBeModerate);
-    buttons = buttons + buttonBlank;
-    buttons = buttons + menuButtonActive(menuRadioButton("Dangerous", threat), canBeDangerous);
-    buttons = buttons + menuButtonActive(menuRadioButton("Extreme", threat), canBeExtreme);
-    buttons = buttons + buttonBlank;
+    if (canBeNone == 1) {
+        buttons = buttons + menuRadioButton("None", threat);
+    }
+    if (canBeModerate == 1) {
+        buttons = buttons + menuRadioButton("Moderate", threat);
+    }
+    if (canBeDangerous == 1) {
+        buttons = buttons + menuRadioButton("Dangerous", threat);
+    }
+    if (canBeExtreme == 1) {
+        buttons = buttons + menuRadioButton("Extreme", threat);
+    }
+
+    integer blanks = 3 - llGetListLength(buttons) % 3;
+    if (blanks != 3) {
+        integer i;
+        for (i = 0; i < blanks; i = i + 1) {
+            buttons = buttons + buttonBlank;
+        }
+    }
     buttons = buttons + buttonSettings;
     setUpMenu("Threat", avatarKey, message, buttons);
 }
@@ -551,21 +565,25 @@ speechMenu(key avatarKey)
 
     // work out what menu items are available
     if (rlvPresent) {
+        doWordList = TRUE;
+        doPenalties = TRUE;
         if (itsMe) {
             doRenamer = TRUE;
-            doWordList = TRUE;
-            doPenalties = TRUE;
+        } else {
+            message = message + "\Only the prisoner can turn on the renamer.";
+        }
+        if (itsMe | agentIsGuard(avatarKey)) {
             if (renamerActive) {
                 doBadWords = TRUE;
                 doDisplayTok = TRUE;
             } else {
-                message = message + "\BadWords and Displaytok (Display-Talk) work only when Renamer is active.";
+                message = message + "\nBadWords and Display-Talk work only when Renamer is active.";
             }
         } else {
-            message = message + "\Only the prisoner may access some functions.";
+            message = message + "\nOnly a guard or the prisoner can turn on Bad Words or Displaytok.";
         }
     } else {
-        message = message + "\nRenamer, BadWords, and Displaytok (Display-Talk) work only when RLV is active.";
+        message = message + "\nRenamer, BadWords, and Display-Talk work only when RLV is active.";
     }
     if (itsMe) {
         if (mood == moodOOC) {
