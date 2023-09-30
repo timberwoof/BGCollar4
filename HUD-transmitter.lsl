@@ -14,7 +14,7 @@ integer iAssetNumber = 0;
 
 // link message json keys of things we're interested in showing the wearer
 list interestingMessages = ["AssetNumber", "Crime", "Class", "Threat", 
-    "RLV", "LockLevel", "ZapLevels", "Mood", "ZAP"];
+    "RLV", "LockLevel", "ZapLevels", "Mood", "ZAP", "BatteryPercent"];
 // not interesting now but could be added: 
 // "Name", "rlvPresent", "RelayLockState", 
 
