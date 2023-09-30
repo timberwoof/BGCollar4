@@ -269,15 +269,25 @@ handleCollarMessage(string senderName, string json) {
         if (value != JSON_INVALID) {
             batteryPercent = (integer)value;
             displayBattery(batteryPercent);
-            if (batteryPercent < 20) {
-                addKeyValue("Battery", "I ought to recharge my collar's battery.");
+            
+            string message = "";
+            if (batteryPercent > 95) {
+                message = "I'm glad I recharged my battery.";
+            } else if (batteryPercent > 20) {
+                message = "";
+            } else if (batteryPercent > 10) {
+                message = "I ought to recharge my collar's battery.";
+            } else {
+                message = "I urgently have to recharge my collar's battery.";
             }
-            if (batteryPercent < 10) {
-                addKeyValue("Battery", "I urgently have to recharge my collar's battery.");
-            }
-            if (batteryPercent > 90) {
+            
+            if (message != "") {
+                addKeyValue("Battery", message);
+                displaySubliminal(message);
+            } else {
                 removeKeyValue("Battery");
             }
+            
             handled = 1;
         }
 
