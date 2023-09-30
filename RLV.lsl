@@ -1,7 +1,7 @@
 // RLV.lsl
 // RLV script for Black Gazza Collar 4
 // Timberwoof Lupindo, June 2019
-// version: 2023-04-15
+// version: 2023-09-29
 
 // controls Relay
 // manages Zap
@@ -292,6 +292,7 @@ startZap(integer zapLevel, key who) {
         } else {
             name = assetNumber + "'s collar";
         }
+        sendJSONinteger("ZAP", zapLevel, "");
 
         // calculate time of zap
         integer zapDischarge = llList2Integer(zapDischarges, zapLevel);
