@@ -3,7 +3,7 @@
 // Timberwoof Lupindo
 // September 2023
 string version = "2023-09-29";
-integer OPTION_DEBUG = TRUE;
+integer OPTION_DEBUG = FALSE;
 
 integer linkTitler = 1;
 integer AlphanumFrameLink;
@@ -54,8 +54,8 @@ vector moodColor = WHITE;
 vector oldMoodColor = BLACK;
 string mood = "OOC";
 
-list threatLevels = ["None", "Moderate", "Dangerous", "Extreme"];
-list threatColors = [GREEN, YELLOW, ORANGE, RED];
+//list threatLevels = ["None", "Moderate", "Dangerous", "Extreme"];
+//list threatColors = [GREEN, YELLOW, ORANGE, RED];
 
 list classNames = ["white","pink","red","orange","green","blue","black"];
 list classNamesLong = ["a transfer prisoner", "a sexual deviant", "in the Mechanics Guild", 
@@ -248,13 +248,9 @@ handleCollarMessage(string senderName, string json) {
         // Threat level 
         value = llJsonGetValue(json, ["Threat"]);
         if (value != JSON_INVALID) {
+            sayDebug("threat level json:"+json);
+            // +" threati:"+(string)threati+" threatcolor:"+(string)threatcolor);
             threat = llToLower(value);
-            integer threati = llListFindList(threatLevels, [threat]);
-            vector threatcolor = llList2Vector(threatColors, threati);
-            sayDebug("threat level json:"+json+" threati:"+(string)threati+
-                " threatcolor:"+(string)threatcolor);
-            // Maybe later make the threat message show up in its color, 
-            // and subsequent messages use the normal color. 
             if (threat == "none") {
                 threat = "no";
             } else {
@@ -262,6 +258,12 @@ handleCollarMessage(string senderName, string json) {
             }
             addKeyValue("Threat", "I am "+threat+" threat to those around me.");
             handled = 1;
+
+            // Maybe later make the threat message show up in its color, 
+            // and subsequent messages use the normal color. 
+            // The threat message woudl have to be associated with its color. 
+            //integer threati = llListFindList(threatLevels, [threat]);
+            //vector threatcolor = llList2Vector(threatColors, threati);
         }
 
         // Battery Level
@@ -269,10 +271,14 @@ handleCollarMessage(string senderName, string json) {
         if (value != JSON_INVALID) {
             batteryPercent = (integer)value;
             displayBattery(batteryPercent);
-            if (batteryPercent < 10) {
-                addKeyValue("Battery", "I should recharge my collar's battery.");
-            } else if (batteryPercent > 90) {
+            if (batteryPercent > 90) {
+                addKeyValue("Battery", "I feel better now that my collar battery is charged up.");
+            } else if (batteryPercent > 20) {
                 removeKeyValue("Battery");
+            } else if (batteryPercent > 10) {
+                addKeyValue("Battery", "I should recharge my collar battery.");
+            } else {
+                addKeyValue("Battery", "I urgently need to recharge my collar battery.");
             }
             handled = 1;
         }
@@ -332,7 +338,7 @@ handleCollarMessage(string senderName, string json) {
             handled = 1;
             sayDebug("RLV "+value);
             if (value == "0") {
-                value = "This punishment is good for me.";
+                value = "Punishment is good for me.";
                 addKeyValue("Zap", value);
                 displaySubliminal(value);
             } else if (value == "1") {
@@ -382,7 +388,6 @@ handleMessageSender(string json) {
     addKeyValue(Key,value);
     sayDebug("handleMessageSender added "+Key+":"+value);
 }
-
 
 default
 {
